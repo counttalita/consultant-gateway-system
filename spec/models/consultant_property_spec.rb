@@ -29,7 +29,7 @@ RSpec.describe "Consultant Profile Update Validation Property", type: :model do
         # Create a consultant with a user
         user = User.create!(
           email: "consultant#{SecureRandom.hex(8)}@example.com",
-          roles: ["consultant"],
+          roles: [ "consultant" ],
           active: true
         )
         consultant = Consultant.create!(

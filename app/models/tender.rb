@@ -19,7 +19,7 @@ class Tender < ApplicationRecord
   scope :past_deadline, -> { where("submission_deadline <= ?", Time.current) }
   scope :high_value, -> { where("tender_value >= ?", 1_000_000) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :with_capability, ->(capability) { where("required_capabilities @> ?", [capability].to_json) }
+  scope :with_capability, ->(capability) { where("required_capabilities @> ?", [ capability ].to_json) }
 
   # Instance methods
   def mark_as_pursue!(score: nil, rationale: nil)
@@ -65,11 +65,11 @@ class Tender < ApplicationRecord
   end
 
   def add_capability(capability)
-    self.required_capabilities = (required_capabilities + [capability.to_s]).uniq
+    self.required_capabilities = (required_capabilities + [ capability.to_s ]).uniq
   end
 
   def remove_capability(capability)
-    self.required_capabilities = required_capabilities - [capability.to_s]
+    self.required_capabilities = required_capabilities - [ capability.to_s ]
   end
 
   def has_capability?(capability)

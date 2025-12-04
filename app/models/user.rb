@@ -48,11 +48,11 @@ class User < ApplicationRecord
     return false unless VALID_ROLES.include?(role_name.to_s)
     return false if consultant? && role_name.to_s != CONSULTANT_ROLE
 
-    self.roles = (roles + [role_name.to_s]).uniq
+    self.roles = (roles + [ role_name.to_s ]).uniq
   end
 
   def remove_role(role_name)
-    self.roles = roles - [role_name.to_s]
+    self.roles = roles - [ role_name.to_s ]
   end
 
   def permissions

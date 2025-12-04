@@ -30,7 +30,7 @@ class Consultant < ApplicationRecord
   scope :onboarding_pending, -> { where(onboarding_status: "pending") }
   scope :onboarding_in_progress, -> { where(onboarding_status: "in_progress") }
   scope :onboarding_completed, -> { where(onboarding_status: "completed") }
-  scope :with_skill, ->(skill) { where("skills @> ?", [skill].to_json) }
+  scope :with_skill, ->(skill) { where("skills @> ?", [ skill ].to_json) }
   scope :synced_to_airtable, -> { where.not(airtable_id: nil) }
   scope :synced_to_harvest, -> { where.not(harvest_id: nil) }
   scope :synced_to_xero, -> { where.not(xero_id: nil) }
@@ -40,11 +40,11 @@ class Consultant < ApplicationRecord
 
   # Instance methods
   def add_skill(skill)
-    self.skills = (skills + [skill.to_s]).uniq
+    self.skills = (skills + [ skill.to_s ]).uniq
   end
 
   def remove_skill(skill)
-    self.skills = skills - [skill.to_s]
+    self.skills = skills - [ skill.to_s ]
   end
 
   def has_skill?(skill)
