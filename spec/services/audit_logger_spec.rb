@@ -65,7 +65,7 @@ RSpec.describe AuditLogger, type: :service do
     it "creates an audit log with formatted changes" do
       changes = {
         "bio" => { "old" => "Old bio", "new" => "New bio" },
-        "skills" => { "old" => ["Ruby"], "new" => ["Ruby", "Rails"] }
+        "skills" => { "old" => [ "Ruby" ], "new" => [ "Ruby", "Rails" ] }
       }
 
       audit_log = described_class.log_profile_change(
@@ -81,12 +81,12 @@ RSpec.describe AuditLogger, type: :service do
       expect(audit_log.resource_type).to eq("Consultant")
       expect(audit_log.resource_id).to eq(consultant.id)
       expect(audit_log.change_data["bio"]).to eq({ "old" => "Old bio", "new" => "New bio" })
-      expect(audit_log.change_data["skills"]).to eq({ "old" => ["Ruby"], "new" => ["Ruby", "Rails"] })
+      expect(audit_log.change_data["skills"]).to eq({ "old" => [ "Ruby" ], "new" => [ "Ruby", "Rails" ] })
     end
 
     it "converts ActiveModel::Dirty format changes" do
       changes = {
-        "bio" => ["Old bio", "New bio"]
+        "bio" => [ "Old bio", "New bio" ]
       }
 
       audit_log = described_class.log_profile_change(
@@ -169,14 +169,14 @@ RSpec.describe AuditLogger, type: :service do
   end
 
   describe ".log_admin_action" do
-    let(:admin_user) { create(:user, roles: ["admin"]) }
+    let(:admin_user) { create(:user, roles: [ "admin" ]) }
 
     it "creates an audit log with admin context" do
       audit_log = described_class.log_admin_action(
         action: "user_role_changed",
         admin_user: admin_user,
         resource: user,
-        changes: { "roles" => { "old" => ["consultant"], "new" => ["consultant", "user"] } },
+        changes: { "roles" => { "old" => [ "consultant" ], "new" => [ "consultant", "user" ] } },
         justification: "Promoted to internal staff",
         ip_address: ip_address
       )
@@ -185,9 +185,9 @@ RSpec.describe AuditLogger, type: :service do
       expect(audit_log.action).to eq("user_role_changed")
       expect(audit_log.user).to eq(admin_user)
       expect(audit_log.resource_type).to eq("User")
-      expect(audit_log.metadata["admin_roles"]).to eq(["admin"])
+      expect(audit_log.metadata["admin_roles"]).to eq([ "admin" ])
       expect(audit_log.metadata["justification"]).to eq("Promoted to internal staff")
-      expect(audit_log.change_data["roles"]).to eq({ "old" => ["consultant"], "new" => ["consultant", "user"] })
+      expect(audit_log.change_data["roles"]).to eq({ "old" => [ "consultant" ], "new" => [ "consultant", "user" ] })
     end
 
     it "works without justification" do
@@ -250,7 +250,7 @@ RSpec.describe AuditLogger, type: :service do
 
       results = described_class.query(user: user)
       expect(results.count).to eq(3)
-      expect(results.pluck(:user_id).uniq).to eq([user.id])
+      expect(results.pluck(:user_id).uniq).to eq([ user.id ])
     end
 
     it "filters by action" do
@@ -293,21 +293,21 @@ RSpec.describe AuditLogger, type: :service do
     it "returns only authentication events" do
       events = described_class.authentication_events(user: user)
       expect(events.count).to eq(2)
-      expect(events.pluck(:action)).to match_array(["login", "logout"])
+      expect(events.pluck(:action)).to match_array([ "login", "logout" ])
     end
   end
 
   describe ".profile_changes" do
     before do
       described_class.log_profile_change(user: user, consultant: consultant, changes: { "bio" => { "old" => "a", "new" => "b" } }, ip_address: ip_address)
-      described_class.log_profile_change(user: user, consultant: consultant, changes: { "skills" => { "old" => [], "new" => ["Ruby"] } }, ip_address: ip_address)
+      described_class.log_profile_change(user: user, consultant: consultant, changes: { "skills" => { "old" => [], "new" => [ "Ruby" ] } }, ip_address: ip_address)
       described_class.log_authentication(action: "login", user: user, ip_address: ip_address)
     end
 
     it "returns only profile changes" do
       changes = described_class.profile_changes(consultant: consultant)
       expect(changes.count).to eq(2)
-      expect(changes.pluck(:action).uniq).to eq(["profile_updated"])
+      expect(changes.pluck(:action).uniq).to eq([ "profile_updated" ])
     end
   end
 
@@ -321,7 +321,7 @@ RSpec.describe AuditLogger, type: :service do
     it "returns only financial operations" do
       operations = described_class.financial_operations
       expect(operations.count).to eq(2)
-      expect(operations.pluck(:action)).to match_array(["invoice_created", "bill_created"])
+      expect(operations.pluck(:action)).to match_array([ "invoice_created", "bill_created" ])
     end
 
     it "filters by user" do
@@ -334,7 +334,7 @@ RSpec.describe AuditLogger, type: :service do
   end
 
   describe ".admin_actions" do
-    let(:admin_user) { create(:user, roles: ["admin"]) }
+    let(:admin_user) { create(:user, roles: [ "admin" ]) }
 
     before do
       described_class.log_admin_action(action: "user_created", admin_user: admin_user, resource: user, ip_address: ip_address)
@@ -345,11 +345,11 @@ RSpec.describe AuditLogger, type: :service do
     it "returns only admin actions" do
       actions = described_class.admin_actions
       expect(actions.count).to eq(2)
-      expect(actions.pluck(:action)).to match_array(["user_created", "user_deactivated"])
+      expect(actions.pluck(:action)).to match_array([ "user_created", "user_deactivated" ])
     end
 
     it "filters by admin user" do
-      other_admin = create(:user, roles: ["admin"])
+      other_admin = create(:user, roles: [ "admin" ])
       described_class.log_admin_action(action: "system_config_changed", admin_user: other_admin, ip_address: ip_address)
 
       actions = described_class.admin_actions(admin_user: admin_user)

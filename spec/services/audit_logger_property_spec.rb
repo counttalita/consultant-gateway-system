@@ -210,7 +210,7 @@ RSpec.describe AuditLogger, type: :service do
           new_bio = Rantly { sized(50) { string(:alpha) } }
 
           changes = {
-            "bio" => [old_bio, new_bio]
+            "bio" => [ old_bio, new_bio ]
           }
 
           # Log profile change

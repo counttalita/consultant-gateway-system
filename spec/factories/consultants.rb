@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :consultant do
     association :user
     bio { "Experienced consultant with expertise in change management" }
-    skills { ["Change Management", "Project Management", "Stakeholder Engagement"] }
+    skills { [ "Change Management", "Project Management", "Stakeholder Engagement" ] }
     banking_details do
       {
         "bank_name" => "Standard Bank",
