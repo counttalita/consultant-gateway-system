@@ -55,7 +55,7 @@ RSpec.describe Adapters::AirtableAdapter do
         )
 
         expect(result["id"]).to eq(record_id)
-        
+
         # Verify cache was updated
         cached = AirtableCache.fetch(cache_key, record_id)
         expect(cached.fresh?).to be true
@@ -79,7 +79,7 @@ RSpec.describe Adapters::AirtableAdapter do
         )
 
         expect(result["id"]).to eq(record_id)
-        
+
         # Verify data was cached
         cached = AirtableCache.fetch(cache_key, record_id)
         expect(cached).not_to be_nil
@@ -252,7 +252,7 @@ RSpec.describe Adapters::AirtableAdapter do
   describe ".execute_with_retry" do
     it "retries on ApiError up to MAX_RETRIES times" do
       attempt_count = 0
-      
+
       expect {
         described_class.execute_with_retry do
           attempt_count += 1
@@ -265,7 +265,7 @@ RSpec.describe Adapters::AirtableAdapter do
 
     it "succeeds on retry" do
       attempt_count = 0
-      
+
       result = described_class.execute_with_retry do
         attempt_count += 1
         raise Adapters::AirtableAdapter::ApiError, "Fail" if attempt_count < 2
@@ -278,7 +278,7 @@ RSpec.describe Adapters::AirtableAdapter do
 
     it "does not retry on non-retryable errors" do
       attempt_count = 0
-      
+
       expect {
         described_class.execute_with_retry do
           attempt_count += 1

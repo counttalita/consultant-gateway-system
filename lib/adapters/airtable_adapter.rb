@@ -25,7 +25,7 @@ module Adapters
     # @return [Hash] Record data
     def self.get_record(base_id:, table:, record_id:, use_cache: true)
       cache_key = "#{base_id}/#{table}"
-      
+
       if use_cache
         cached = CacheManager.fetch(cache_key, record_id)
         return cached if cached
@@ -49,7 +49,7 @@ module Adapters
           return stale_cached
         end
       end
-      
+
       raise
     end
 
@@ -160,18 +160,18 @@ module Adapters
     # Fetch multiple records from Airtable API
     def self.fetch_records_from_api(base_id:, table:, filter_formula: nil, max_records: nil)
       uri = URI("#{AIRTABLE_API_URL}/#{base_id}/#{encode_table_name(table)}")
-      
+
       params = {}
       params["filterByFormula"] = filter_formula if filter_formula
       params["maxRecords"] = max_records if max_records
-      
+
       if params.any?
         uri.query = URI.encode_www_form(params)
       end
 
       response = send_get_request(uri)
       data = JSON.parse(response.body)
-      
+
       records = data["records"] || []
       records.map { |record| normalize_record(record) }
     rescue JSON::ParserError => e
@@ -181,7 +181,7 @@ module Adapters
     # Create a record via Airtable API
     def self.create_record_in_api(base_id:, table:, fields:)
       uri = URI("#{AIRTABLE_API_URL}/#{base_id}/#{encode_table_name(table)}")
-      
+
       body = { fields: fields }.to_json
       response = send_post_request(uri, body)
       parse_record_response(response)
@@ -190,7 +190,7 @@ module Adapters
     # Update a record via Airtable API
     def self.update_record_in_api(base_id:, table:, record_id:, fields:)
       uri = URI("#{AIRTABLE_API_URL}/#{base_id}/#{encode_table_name(table)}/#{record_id}")
-      
+
       body = { fields: fields }.to_json
       response = send_patch_request(uri, body)
       parse_record_response(response)
@@ -200,7 +200,7 @@ module Adapters
     def self.delete_record_from_api(base_id:, table:, record_id:)
       uri = URI("#{AIRTABLE_API_URL}/#{base_id}/#{encode_table_name(table)}/#{record_id}")
       response = send_delete_request(uri)
-      
+
       data = JSON.parse(response.body)
       data["deleted"] == true
     rescue JSON::ParserError => e
@@ -212,7 +212,7 @@ module Adapters
       http = build_http_client(uri)
       request = Net::HTTP::Get.new(uri)
       add_auth_headers(request)
-      
+
       response = http.request(request)
       handle_response(response)
     end
@@ -224,7 +224,7 @@ module Adapters
       add_auth_headers(request)
       request["Content-Type"] = "application/json"
       request.body = body
-      
+
       response = http.request(request)
       handle_response(response)
     end
@@ -236,7 +236,7 @@ module Adapters
       add_auth_headers(request)
       request["Content-Type"] = "application/json"
       request.body = body
-      
+
       response = http.request(request)
       handle_response(response)
     end
@@ -246,7 +246,7 @@ module Adapters
       http = build_http_client(uri)
       request = Net::HTTP::Delete.new(uri)
       add_auth_headers(request)
-      
+
       response = http.request(request)
       handle_response(response)
     end

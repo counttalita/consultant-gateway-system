@@ -16,10 +16,10 @@ RSpec.describe Adapters::AirtableAdapter do
         table = Rantly { string(/[A-Z][a-z]+/) }
         record_id = Rantly { string(/rec[a-zA-Z0-9]{14}/) }
         cache_key = "#{base_id}/#{table}"
-        
+
         # Clean up any existing cache for this key
         AirtableCache.invalidate(cache_key, record_id)
-        
+
         fields = {
           "Name" => Rantly { string },
           "Email" => "#{Rantly { string(/[a-z]{5}/) }}@example.com",
@@ -58,11 +58,11 @@ RSpec.describe Adapters::AirtableAdapter do
         expect(cached_record.record_id).to eq(record_id)
         expect(cached_record.data["id"]).to eq(record_id)
         expect(cached_record.data["fields"]).to eq(fields)
-        
+
         # Verify timestamp metadata exists
         expect(cached_record.cached_at).to be_present
         expect(cached_record.cached_at).to be_within(5.seconds).of(Time.current)
-        
+
         # Clean up for next iteration
         AirtableCache.invalidate(cache_key, record_id)
         RSpec::Mocks.space.proxy_for(described_class).reset
@@ -79,9 +79,9 @@ RSpec.describe Adapters::AirtableAdapter do
         base_id = Rantly { string(/[a-z]{3}[0-9]{10}/) }
         table = Rantly { string(/[A-Z][a-z]+/) }
         record_id = Rantly { string(/rec[a-zA-Z0-9]{14}/) }
-        
+
         cache_key = "#{base_id}/#{table}"
-        
+
         fields = {
           "Name" => Rantly { string },
           "Value" => Rantly { range(1, 1000) }
@@ -114,7 +114,7 @@ RSpec.describe Adapters::AirtableAdapter do
         # Verify we got the cached data
         expect(result["id"]).to eq(record_id)
         expect(result["fields"]).to eq(fields)
-        
+
         # Clean up for next iteration
         RSpec::Mocks.space.proxy_for(described_class).reset
       end
@@ -127,7 +127,7 @@ RSpec.describe Adapters::AirtableAdapter do
         table = Rantly { string(/[A-Z][a-z]+/) }
         record_id = Rantly { string(/rec[a-zA-Z0-9]{14}/) }
         cache_key = "#{base_id}/#{table}"
-        
+
         old_fields = { "Name" => "Old Value" }
         new_fields = { "Name" => "New Value" }
 
@@ -137,7 +137,7 @@ RSpec.describe Adapters::AirtableAdapter do
           "fields" => old_fields,
           "createdTime" => 10.minutes.ago.iso8601
         }
-        
+
         AirtableCache.store(cache_key, record_id, stale_data)
         cached = AirtableCache.fetch(cache_key, record_id)
         # Force the cache to be stale
@@ -167,12 +167,12 @@ RSpec.describe Adapters::AirtableAdapter do
 
         # Verify we got the new data from API
         expect(result["fields"]).to eq(new_fields)
-        
+
         # Verify cache was updated
         updated_cache = AirtableCache.fetch(cache_key, record_id)
         expect(updated_cache.data["fields"]).to eq(new_fields)
         expect(updated_cache.fresh?).to be true
-        
+
         # Clean up for next iteration
         AirtableCache.invalidate(cache_key, record_id)
         RSpec::Mocks.space.proxy_for(described_class).reset
@@ -185,9 +185,9 @@ RSpec.describe Adapters::AirtableAdapter do
         base_id = Rantly { string(/[a-z]{3}[0-9]{10}/) }
         table = Rantly { string(/[A-Z][a-z]+/) }
         record_id = Rantly { string(/rec[a-zA-Z0-9]{14}/) }
-        
+
         cache_key = "#{base_id}/#{table}"
-        
+
         # Ensure no cache exists
         AirtableCache.invalidate(cache_key, record_id)
         expect(AirtableCache.fetch(cache_key, record_id)).to be_nil
@@ -215,12 +215,10 @@ RSpec.describe Adapters::AirtableAdapter do
         # Verify we got the data from API
         expect(result["id"]).to eq(record_id)
         expect(result["fields"]).to eq(fields)
-        
+
         # Clean up for next iteration
         RSpec::Mocks.space.proxy_for(described_class).reset
       end
     end
   end
-
-
 end

@@ -76,7 +76,7 @@ RSpec.describe CacheManager do
   describe ".store" do
     it "stores data in cache with timestamp" do
       result = described_class.store(table, record_id, data)
-      
+
       expect(result).to be_a(AirtableCache)
       expect(result.table).to eq(table)
       expect(result.record_id).to eq(record_id)
@@ -87,14 +87,14 @@ RSpec.describe CacheManager do
     it "updates existing cache entry" do
       # Store initial data
       described_class.store(table, record_id, data)
-      
+
       # Update with new data
       new_data = { "id" => record_id, "fields" => { "Name" => "Updated" } }
       described_class.store(table, record_id, new_data)
-      
+
       # Should only have one record
       expect(AirtableCache.where(table: table, record_id: record_id).count).to eq(1)
-      
+
       # Should have new data
       cached = AirtableCache.fetch(table, record_id)
       expect(cached.data["fields"]["Name"]).to eq("Updated")
@@ -108,7 +108,7 @@ RSpec.describe CacheManager do
 
     it "removes cache entry" do
       described_class.invalidate(table, record_id)
-      
+
       cached = AirtableCache.fetch(table, record_id)
       expect(cached).to be_nil
     end
@@ -128,7 +128,7 @@ RSpec.describe CacheManager do
 
     it "removes all cache entries for the table" do
       described_class.invalidate_table(table)
-      
+
       expect(AirtableCache.where(table: table).count).to eq(0)
       expect(AirtableCache.where(table: "other_table").count).to eq(1)
     end
@@ -151,7 +151,7 @@ RSpec.describe CacheManager do
       # Create fresh entries
       AirtableCache.store(table, "rec1", data)
       AirtableCache.store(table, "rec2", data)
-      
+
       # Create stale entry
       AirtableCache.store(table, "rec3", data)
       stale = AirtableCache.fetch(table, "rec3")
@@ -160,7 +160,7 @@ RSpec.describe CacheManager do
 
     it "returns cache statistics" do
       stats = described_class.stats
-      
+
       expect(stats[:total_entries]).to eq(3)
       expect(stats[:fresh_entries]).to eq(2)
       expect(stats[:stale_entries]).to eq(1)
@@ -173,12 +173,12 @@ RSpec.describe CacheManager do
     before do
       # Create recent entry
       AirtableCache.store(table, "rec1", data)
-      
+
       # Create old entries
       AirtableCache.store(table, "rec2", data)
       old1 = AirtableCache.fetch(table, "rec2")
       old1.update_column(:cached_at, 2.days.ago)
-      
+
       AirtableCache.store(table, "rec3", data)
       old2 = AirtableCache.fetch(table, "rec3")
       old2.update_column(:cached_at, 3.days.ago)
@@ -186,7 +186,7 @@ RSpec.describe CacheManager do
 
     it "removes entries older than specified time" do
       count = described_class.cleanup(older_than: 1.day.ago)
-      
+
       expect(count).to eq(2)
       expect(AirtableCache.count).to eq(1)
     end
@@ -208,9 +208,9 @@ RSpec.describe CacheManager do
         .and_return(new_data)
 
       result = described_class.refresh(table, record_id, base_id: base_id, table_name: table_name)
-      
+
       expect(result).to eq(new_data)
-      
+
       cached = AirtableCache.fetch(table, record_id)
       expect(cached.data["fields"]["Name"]).to eq("Refreshed")
     end
@@ -233,10 +233,10 @@ RSpec.describe CacheManager do
         .and_return(records)
 
       count = described_class.warm_up(table, base_id: base_id, table_name: table_name)
-      
+
       expect(count).to eq(3)
       expect(AirtableCache.where(table: table).count).to eq(3)
-      
+
       # Verify each record is cached
       records.each do |record|
         cached = AirtableCache.fetch(table, record["id"])
@@ -268,7 +268,7 @@ RSpec.describe CacheManager do
   describe ".health_check" do
     it "returns healthy status when cache is operational" do
       result = described_class.health_check
-      
+
       expect(result[:status]).to eq("healthy")
       expect(result[:message]).to eq("Cache is operational")
       expect(result[:stats]).to be_a(Hash)
@@ -276,9 +276,9 @@ RSpec.describe CacheManager do
 
     it "returns unhealthy status on error" do
       allow(AirtableCache).to receive(:store).and_raise(StandardError, "Database error")
-      
+
       result = described_class.health_check
-      
+
       expect(result[:status]).to eq("unhealthy")
       expect(result[:message]).to include("Cache error")
       expect(result[:error]).to eq("StandardError")

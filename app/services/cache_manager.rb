@@ -13,7 +13,7 @@ class CacheManager
     # @return [Hash, nil] Cached data if fresh, nil otherwise
     def fetch(table, record_id)
       cached = AirtableCache.fetch(table, record_id)
-      
+
       if cached&.fresh?
         Rails.logger.debug("Cache hit (fresh) for #{table}/#{record_id}")
         cached.data
@@ -29,7 +29,7 @@ class CacheManager
     # @return [Hash, nil] Cached data regardless of freshness, nil if not found
     def fetch_stale(table, record_id)
       cached = AirtableCache.fetch(table, record_id)
-      
+
       if cached
         Rails.logger.debug("Cache hit (stale) for #{table}/#{record_id}, age: #{cached.age.to_i}s")
         cached.data
@@ -46,9 +46,9 @@ class CacheManager
     # @return [AirtableCache] The cached record
     def store(table, record_id, data)
       Rails.logger.debug("Storing in cache: #{table}/#{record_id}")
-      
+
       AirtableCache.store(table, record_id, data)
-      
+
       # Return the cached record for chaining
       AirtableCache.fetch(table, record_id)
     end
@@ -83,7 +83,7 @@ class CacheManager
       total = AirtableCache.count
       fresh = AirtableCache.fresh.count
       stale = AirtableCache.stale.count
-      
+
       {
         total_entries: total,
         fresh_entries: fresh,
@@ -110,7 +110,7 @@ class CacheManager
     # @return [Hash] Refreshed data
     def refresh(table, record_id, base_id:, table_name:)
       Rails.logger.debug("Refreshing cache: #{table}/#{record_id}")
-      
+
       # Fetch fresh data from Airtable (bypass cache)
       data = Adapters::AirtableAdapter.get_record(
         base_id: base_id,
@@ -118,10 +118,10 @@ class CacheManager
         record_id: record_id,
         use_cache: false
       )
-      
+
       # Update cache
       store(table, record_id, data)
-      
+
       data
     end
 
@@ -134,18 +134,18 @@ class CacheManager
     # @return [Integer] Number of records cached
     def warm_up(table, base_id:, table_name:, filter_formula: nil, max_records: nil)
       Rails.logger.info("Warming up cache for table: #{table}")
-      
+
       records = Adapters::AirtableAdapter.list_records(
         base_id: base_id,
         table: table_name,
         filter_formula: filter_formula,
         max_records: max_records
       )
-      
+
       records.each do |record|
         store(table, record["id"], record)
       end
-      
+
       Rails.logger.info("Cached #{records.count} records for #{table}")
       records.count
     end
@@ -158,16 +158,16 @@ class CacheManager
         test_table = "health_check"
         test_id = "test_#{Time.current.to_i}"
         test_data = { "test" => true, "timestamp" => Time.current.to_s }
-        
+
         # Store test data
         store(test_table, test_id, test_data)
-        
+
         # Fetch test data
         fetched = fetch(test_table, test_id)
-        
+
         # Clean up test data
         invalidate(test_table, test_id)
-        
+
         # Verify data integrity
         if fetched == test_data
           {
