@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: consultant-gateway-web
+    runtime: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis
+          property: connectionString
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+    autoDeploy: false
+
+  - type: worker
+    name: consultant-gateway-worker
+    runtime: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec sidekiq -C config/sidekiq.yml"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis
+          property: connectionString
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+    autoDeploy: false
+
+databases:
+  - name: consultant-gateway-db
+    databaseName: consultant_gateway_production
+    user: consultant_gateway
+
+  - name: consultant-gateway-redis
+    type: redis
+    ipAllowList: []

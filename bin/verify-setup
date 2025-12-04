@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+require "fileutils"
+
+# Verify setup script for Consultant Gateway System
+puts "🔍 Verifying Consultant Gateway System setup...\n\n"
+
+errors = []
+warnings = []
+
+# Check Ruby version
+print "Checking Ruby version... "
+required_ruby = File.read(".ruby-version").strip
+current_ruby = RUBY_VERSION
+if current_ruby == required_ruby
+  puts "✅ Ruby #{current_ruby}"
+else
+  puts "⚠️  Ruby #{current_ruby} (expected #{required_ruby})"
+  warnings << "Ruby version mismatch"
+end
+
+# Check PostgreSQL
+print "Checking PostgreSQL... "
+if system("which psql > /dev/null 2>&1")
+  puts "✅ PostgreSQL installed"
+else
+  puts "❌ PostgreSQL not found"
+  errors << "PostgreSQL is not installed"
+end
+
+# Check Redis
+print "Checking Redis... "
+if system("which redis-cli > /dev/null 2>&1")
+  puts "✅ Redis installed"
+else
+  puts "❌ Redis not found"
+  errors << "Redis is not installed"
+end
+
+# Check Bundler
+print "Checking Bundler... "
+if system("which bundle > /dev/null 2>&1")
+  puts "✅ Bundler installed"
+else
+  puts "❌ Bundler not found"
+  errors << "Bundler is not installed"
+end
+
+# Check .env file
+print "Checking .env file... "
+if File.exist?(".env")
+  puts "✅ .env file exists"
+else
+  puts "⚠️  .env file not found"
+  warnings << "Create .env file from .env.example"
+end
+
+# Check database
+print "Checking database connection... "
+if system("bin/rails runner 'ActiveRecord::Base.connection' > /dev/null 2>&1")
+  puts "✅ Database connected"
+else
+  puts "❌ Database connection failed"
+  errors << "Cannot connect to database. Run: rails db:create db:migrate"
+end
+
+# Check Redis connection
+print "Checking Redis connection... "
+if system("redis-cli ping > /dev/null 2>&1")
+  puts "✅ Redis connected"
+else
+  puts "⚠️  Redis not running"
+  warnings << "Start Redis with: redis-server"
+end
+
+# Run tests
+print "Running test suite... "
+if system("RAILS_ENV=test bundle exec rspec > /dev/null 2>&1")
+  puts "✅ All tests passing"
+else
+  puts "❌ Tests failing"
+  errors << "Some tests are failing. Run: bundle exec rspec"
+end
+
+puts "\n" + "="*50
+
+if errors.empty? && warnings.empty?
+  puts "✅ Setup verification complete! Everything looks good."
+  puts "\nYou can start the application with:"
+  puts "  rails server"
+  puts "  bundle exec sidekiq -C config/sidekiq.yml"
+  exit 0
+elsif errors.empty?
+  puts "⚠️  Setup verification complete with warnings:"
+  warnings.each { |w| puts "  - #{w}" }
+  exit 0
+else
+  puts "❌ Setup verification failed with errors:"
+  errors.each { |e| puts "  - #{e}" }
+  puts "\nPlease fix the errors above and run this script again."
+  exit 1
+end

@@ -1,0 +1,16 @@
+:concurrency: 5
+:queues:
+  - default
+  - mailers
+  - webhooks
+  - integrations
+  - critical
+
+production:
+  :concurrency: 10
+
+development:
+  :concurrency: 2
+
+test:
+  :concurrency: 1
