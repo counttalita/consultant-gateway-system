@@ -47,7 +47,7 @@ group :development, :test do
   gem "faker", "~> 3.2"
 
   # Property-based testing
-  gem "rantly", "~> 2.0"
+  gem "rantly", "~> 3.0"
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
