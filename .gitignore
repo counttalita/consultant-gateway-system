@@ -33,4 +33,5 @@
 
 # Ignore Kiro IDE files
 /.kiro
+../.kiro
 
