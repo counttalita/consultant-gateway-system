@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe AuthenticationService, type: :service do
   include ActiveSupport::Testing::TimeHelpers
-  
+
   let(:service) { described_class.new }
 
   describe "Property-Based Tests" do
@@ -67,11 +67,11 @@ RSpec.describe AuthenticationService, type: :service do
           # Create user and OTP code with unique code
           user = create(:user, email: email)
           code = format("%06d", Rantly { range(100000, 999999) })
-          
+
           # Create OTP that's still valid (random time between 1 and 9 minutes from now)
           minutes_until_expiry = Rantly { range(1, 9) }
-          otp_code = create(:otp_code, 
-            user: user, 
+          otp_code = create(:otp_code,
+            user: user,
             code: code,
             expires_at: minutes_until_expiry.minutes.from_now,
             created_at: Time.current
@@ -122,8 +122,8 @@ RSpec.describe AuthenticationService, type: :service do
           # Create user and OTP code with sufficient expiration time and unique code
           user = create(:user, email: email)
           code = format("%06d", Rantly { range(100000, 999999) })
-          otp_code = create(:otp_code, 
-            user: user, 
+          otp_code = create(:otp_code,
+            user: user,
             code: code,
             expires_at: 10.minutes.from_now,
             created_at: Time.current
@@ -186,7 +186,7 @@ RSpec.describe AuthenticationService, type: :service do
 
             # Verify session is still valid
             expect(validated_user).to eq(user)
-            
+
             # Verify session hasn't expired
             session.reload
             expect(session.active?).to be true
@@ -223,7 +223,7 @@ RSpec.describe AuthenticationService, type: :service do
 
             # Verify session is expired
             expect(validated_user).to be_nil
-            
+
             session.reload
             expect(session.expired?).to be true
           end

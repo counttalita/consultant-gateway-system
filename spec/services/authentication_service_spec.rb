@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe AuthenticationService do
   include ActiveSupport::Testing::TimeHelpers
-  
+
   let(:service) { described_class.new }
   let(:email) { "test@example.com" }
   let(:ip_address) { "127.0.0.1" }
@@ -134,7 +134,7 @@ RSpec.describe AuthenticationService do
         )
         expect(result).to be_nil
       end
-      
+
       it "raises error for non-existent code with existing user" do
         user # Force user creation
         expect {
