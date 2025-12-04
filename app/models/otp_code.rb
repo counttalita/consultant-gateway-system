@@ -10,7 +10,7 @@ class OtpCode < ApplicationRecord
   before_validation :set_expiration, on: :create
 
   # Scopes
-  scope :valid, -> { where("expires_at > ? AND consumed_at IS NULL", Time.current) }
+  scope :still_valid, -> { where("expires_at > ? AND consumed_at IS NULL", Time.current) }
   scope :expired, -> { where("expires_at <= ?", Time.current) }
   scope :consumed, -> { where.not(consumed_at: nil) }
   scope :unconsumed, -> { where(consumed_at: nil) }
@@ -39,8 +39,8 @@ class OtpCode < ApplicationRecord
   end
 
   # Instance methods
-  def valid?
-    super && !expired? && !consumed?
+  def still_valid?
+    !expired? && !consumed?
   end
 
   def expired?

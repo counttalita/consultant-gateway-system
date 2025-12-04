@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :user do
-    email { "MyString" }
-    roles { "MyText" }
-    active { false }
+    sequence(:email) { |n| "user#{n}@example.com" }
+    roles { [ "consultant" ] }
+    active { true }
   end
 end

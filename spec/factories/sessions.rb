@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :session do
-    user { nil }
-    token { "MyString" }
-    expires_at { "2025-12-04 10:07:06" }
-    last_activity_at { "2025-12-04 10:07:06" }
-    ip_address { "" }
+    user
+    token { SecureRandom.urlsafe_base64(32) }
+    expires_at { 24.hours.from_now }
+    last_activity_at { Time.current }
+    ip_address { "127.0.0.1" }
   end
 end

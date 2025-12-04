@@ -12,6 +12,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Authentication routes
+      post "auth/request-otp", to: "auth#request_otp"
+      post "auth/validate-otp", to: "auth#validate_otp"
+      delete "auth/logout", to: "auth#logout"
+      get "auth/session", to: "auth#session"
+
       # Profile routes
       # Onboarding routes
       # etc.

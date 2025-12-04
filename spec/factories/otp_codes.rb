@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :otp_code do
-    user { nil }
-    code { "MyString" }
-    expires_at { "2025-12-04 10:06:36" }
-    consumed_at { "2025-12-04 10:06:36" }
-    ip_address { "" }
+    user
+    sequence(:code) { |n| format("%06d", (100000 + n) % 1000000) }
+    expires_at { 10.minutes.from_now }
+    consumed_at { nil }
+    ip_address { "127.0.0.1" }
   end
 end
