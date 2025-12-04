@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_04_081131) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_04_160347) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_04_081131) do
     t.datetime "created_at", null: false
     t.datetime "expires_at", null: false
     t.inet "ip_address"
+    t.string "resend_message_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["consumed_at"], name: "index_otp_codes_on_consumed_at"

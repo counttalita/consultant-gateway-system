@@ -5,6 +5,7 @@ class OtpCode < ApplicationRecord
   # Validations
   validates :code, presence: true, format: { with: /\A\d{6}\z/, message: "must be a 6-digit number" }
   validates :expires_at, presence: true
+  validates :resend_message_id, presence: true, if: :email_sent?
 
   # Callbacks
   before_validation :set_expiration, on: :create
@@ -58,6 +59,15 @@ class OtpCode < ApplicationRecord
   def time_remaining
     return 0 if expired?
     (expires_at - Time.current).to_i
+  end
+
+  def email_sent?
+    # Email is considered sent if we have a message ID
+    resend_message_id.present?
+  end
+
+  def store_message_id(message_id)
+    update!(resend_message_id: message_id)
   end
 
   private

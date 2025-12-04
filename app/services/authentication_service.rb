@@ -153,20 +153,38 @@ class AuthenticationService
 
   private
 
-  # Send OTP code via email
-  # TODO: Implement Resend adapter integration
+  # Send OTP code via email using Resend adapter
   def send_otp_email(user, otp_code)
-    # For now, just log the OTP (will be replaced with Resend integration)
-    Rails.logger.info("OTP Code for #{user.email}: #{otp_code.code} (expires in #{otp_code.time_remaining}s)")
+    begin
+      message_id = Adapters::ResendAdapter.send_email(
+        to: user.email,
+        template: "otp_code",
+        variables: {
+          code: otp_code.code,
+          expires_in_minutes: (otp_code.time_remaining / 60).ceil
+        }
+      )
 
-    # When Resend adapter is implemented:
-    # ResendAdapter.send_email(
-    #   to: user.email,
-    #   template: "otp_code",
-    #   variables: {
-    #     code: otp_code.code,
-    #     expires_in_minutes: (otp_code.time_remaining / 60).ceil
-    #   }
-    # )
+      # Store the Resend message ID for tracking
+      otp_code.store_message_id(message_id)
+
+      Rails.logger.info("OTP email sent successfully to #{user.email} with message ID: #{message_id}")
+    rescue Adapters::ResendAdapter::EmailDeliveryError => e
+      # Log the error but don't fail OTP generation
+      # The OTP is still valid even if email fails
+      Rails.logger.error("Failed to send OTP email to #{user.email}: #{e.message}")
+
+      # Create audit log for email failure
+      AuditLog.create!(
+        user: user,
+        action: "otp_email_failed",
+        resource_type: "OtpCode",
+        resource_id: otp_code.id,
+        metadata: { error: e.message, email: user.email }
+      )
+
+      # Re-raise to allow caller to handle
+      raise
+    end
   end
 end

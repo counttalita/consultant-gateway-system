@@ -9,6 +9,11 @@ RSpec.describe AuthenticationService do
   let(:email) { "test@example.com" }
   let(:ip_address) { "127.0.0.1" }
 
+  # Mock ResendAdapter to avoid real HTTP requests
+  before do
+    allow(Adapters::ResendAdapter).to receive(:send_email).and_return("msg_#{SecureRandom.hex(16)}")
+  end
+
   describe "#generate_otp" do
     context "with valid email" do
       it "creates a new user if one doesn't exist" do

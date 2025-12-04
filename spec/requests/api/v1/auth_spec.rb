@@ -3,6 +3,11 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Auth", type: :request do
+  # Mock ResendAdapter to avoid real HTTP requests
+  before do
+    allow(Adapters::ResendAdapter).to receive(:send_email).and_return("msg_#{SecureRandom.hex(16)}")
+  end
+
   describe "POST /api/v1/auth/request-otp" do
     let(:email) { "test@example.com" }
 

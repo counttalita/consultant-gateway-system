@@ -7,6 +7,11 @@ RSpec.describe AuthenticationService, type: :service do
 
   let(:service) { described_class.new }
 
+  # Mock ResendAdapter to avoid real HTTP requests
+  before do
+    allow(Adapters::ResendAdapter).to receive(:send_email).and_return("msg_#{SecureRandom.hex(16)}")
+  end
+
   describe "Property-Based Tests" do
     # Feature: consultant-gateway-system, Property 1: OTP Generation and Delivery
     # Validates: Requirements 1.1, 13.1
