@@ -9,6 +9,10 @@ RSpec.describe Adapters::ResendAdapter, type: :service do
     describe "Property 50: Email Retry Logic" do
       it "retries email delivery up to 3 times with exponential backoff for any email failure" do
         property_test(iterations: 100) do
+          # Mock API key before anything else
+          allow(ENV).to receive(:[]).and_call_original
+          allow(ENV).to receive(:[]).with("RESEND_API_KEY").and_return("re_123456789")
+
           # Generate random valid email
           email = Rantly {
             username = sized(10) { string(:alpha) }
@@ -83,6 +87,10 @@ RSpec.describe Adapters::ResendAdapter, type: :service do
 
       it "raises EmailDeliveryError after 3 failed attempts for any email" do
         property_test(iterations: 100) do
+          # Mock API key before anything else
+          allow(ENV).to receive(:[]).and_call_original
+          allow(ENV).to receive(:[]).with("RESEND_API_KEY").and_return("re_123456789")
+
           # Generate random valid email
           email = Rantly {
             username = sized(10) { string(:alpha) }
@@ -135,6 +143,10 @@ RSpec.describe Adapters::ResendAdapter, type: :service do
     describe "Property 51: Email Message ID Storage" do
       it "stores the Resend message ID for any successfully sent email" do
         property_test(iterations: 100) do
+          # Mock API key before anything else
+          allow(ENV).to receive(:[]).and_call_original
+          allow(ENV).to receive(:[]).with("RESEND_API_KEY").and_return("re_123456789")
+
           # Generate random valid email (unique per iteration)
           timestamp = (Time.current.to_f * 1000000).to_i
           random_suffix = Rantly { range(1000, 9999) }
@@ -189,6 +201,10 @@ RSpec.describe Adapters::ResendAdapter, type: :service do
 
       it "does not store message ID when email delivery fails for any email" do
         property_test(iterations: 100) do
+          # Mock API key before anything else
+          allow(ENV).to receive(:[]).and_call_original
+          allow(ENV).to receive(:[]).with("RESEND_API_KEY").and_return("re_123456789")
+
           # Generate random valid email (unique per iteration)
           timestamp = (Time.current.to_f * 1000000).to_i
           random_suffix = Rantly { range(1000, 9999) }
