@@ -101,7 +101,7 @@ RSpec.describe "Api::V1::Users", type: :request do
             params: { roles: [ "consultant", "admin" ] },
             headers: { "Authorization" => "Bearer #{admin_session.token}" }
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
       expect(json["success"]).to be false
       expect(json["error"]).to include("Cannot modify consultant roles")
@@ -112,7 +112,7 @@ RSpec.describe "Api::V1::Users", type: :request do
             params: { roles: [ "user" ] },
             headers: { "Authorization" => "Bearer #{admin_session.token}" }
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
       expect(json["success"]).to be false
       expect(json["error"]).to include("Cannot modify your own roles")
@@ -123,7 +123,7 @@ RSpec.describe "Api::V1::Users", type: :request do
             params: { roles: [ "invalid_role" ] },
             headers: { "Authorization" => "Bearer #{admin_session.token}" }
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
       expect(json["success"]).to be false
     end

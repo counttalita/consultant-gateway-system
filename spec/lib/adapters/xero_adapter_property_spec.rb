@@ -116,7 +116,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: banking_details,
             tax_number: tax_number,
             vat_number: vat_number,
@@ -181,7 +181,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: banking_details
           )
 
@@ -242,7 +242,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = build(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: banking_details
           )
 
@@ -267,7 +267,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: {
               "bank_name" => "Standard Bank",
               "account_number" => "12345678",
@@ -304,7 +304,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: {
               "bank_name" => "Standard Bank",
               "account_number" => "12345678",
@@ -362,7 +362,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: banking_details
           )
 
@@ -407,7 +407,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             banking_details: banking_details
           )
 
@@ -465,7 +465,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
           consultant = create(:consultant,
             user: user,
             onboarding_status: "completed",
-            harvest_id: "harvest_#{rand(10000..99999)}",
+            harvest_id: "harvest_#{SecureRandom.hex(8)}",
             xero_id: "xero_#{SecureRandom.uuid}",
             banking_details: banking_details
           )

@@ -34,7 +34,7 @@ module Api
 
           render json: { message: "Profile updated successfully", consultant: @consultant }
         else
-          render json: { error: @consultant.errors.full_messages.join(", ") }, status: :unprocessable_entity
+          render json: { error: @consultant.errors.full_messages.join(", ") }, status: :unprocessable_content
         end
       end
 

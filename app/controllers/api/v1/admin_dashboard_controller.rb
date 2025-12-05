@@ -17,7 +17,7 @@ module Api
           data_quality: dashboard.data_quality_assessment
         }, status: :ok
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/admin/dashboard/active_users
@@ -27,7 +27,7 @@ module Api
 
         render json: dashboard.active_users(period: period), status: :ok
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/admin/dashboard/integration_health
@@ -36,7 +36,7 @@ module Api
 
         render json: dashboard.integration_health, status: :ok
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/admin/dashboard/activity_trends
@@ -59,7 +59,7 @@ module Api
       rescue ArgumentError => e
         render json: { error: "Invalid date format: #{e.message}" }, status: :bad_request
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/admin/dashboard/errors
@@ -78,7 +78,7 @@ module Api
       rescue ArgumentError => e
         render json: { error: "Invalid date format: #{e.message}" }, status: :bad_request
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/admin/dashboard/data_quality
@@ -87,7 +87,7 @@ module Api
 
         render json: dashboard.data_quality_assessment, status: :ok
       rescue AdminDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       private

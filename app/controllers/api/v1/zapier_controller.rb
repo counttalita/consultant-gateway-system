@@ -103,7 +103,7 @@ module Api
         )
 
         status = case exception
-        when ArgumentError then :unprocessable_entity
+        when ArgumentError then :unprocessable_content
         when ActiveRecord::RecordNotFound then :not_found
         else :internal_server_error
         end

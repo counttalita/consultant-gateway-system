@@ -27,7 +27,7 @@ module Webhooks
         render json: {
           success: false,
           errors: result[:errors]
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
     rescue StandardError => e
       Rails.logger.error("Tender webhook error: #{e.message}")

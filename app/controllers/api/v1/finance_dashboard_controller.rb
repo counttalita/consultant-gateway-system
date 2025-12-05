@@ -19,7 +19,7 @@ module Api
           payment_aging: dashboard.payment_aging_report
         }
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/revenue
@@ -27,7 +27,7 @@ module Api
         dashboard = FinanceDashboard.new
         render json: dashboard.current_month_revenue
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/outstanding_invoices
@@ -35,7 +35,7 @@ module Api
         dashboard = FinanceDashboard.new
         render json: dashboard.outstanding_invoices
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/utilization
@@ -51,7 +51,7 @@ module Api
       rescue ArgumentError => e
         render json: { error: "Invalid date format: #{e.message}" }, status: :bad_request
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/profitability
@@ -63,7 +63,7 @@ module Api
           projects: dashboard.project_profitability(project_id: project_id)
         }
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/payment_aging
@@ -71,7 +71,7 @@ module Api
         dashboard = FinanceDashboard.new
         render json: dashboard.payment_aging_report
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       # GET /api/v1/finance/export
@@ -94,7 +94,7 @@ module Api
       rescue ArgumentError => e
         render json: { error: "Invalid parameters: #{e.message}" }, status: :bad_request
       rescue FinanceDashboard::CalculationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       private

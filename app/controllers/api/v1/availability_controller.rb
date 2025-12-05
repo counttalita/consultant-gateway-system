@@ -97,7 +97,7 @@ module Api
           render json: {
             success: false,
             errors: result[:errors]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       rescue StandardError => e
         Rails.logger.error("Availability update failed: #{e.message}")

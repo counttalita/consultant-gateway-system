@@ -4,10 +4,6 @@
 module Authorizable
   extend ActiveSupport::Concern
 
-  included do
-    rescue_from AuthorizationError, with: :handle_authorization_error
-  end
-
   class AuthorizationError < StandardError; end
 
   # Check if current user has the required permission
@@ -79,6 +75,8 @@ module Authorizable
       false
     end
   end
+
+  protected
 
   # Handle authorization errors
   def handle_authorization_error(exception)

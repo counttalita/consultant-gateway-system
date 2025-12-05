@@ -24,7 +24,7 @@ module Api
           service.complete_step(step_name, data)
           render json: { message: "Step completed", status: service.status }
         rescue OnboardingService::Error => e
-          render json: { error: e.message }, status: :unprocessable_entity
+          render json: { error: e.message }, status: :unprocessable_content
         end
       end
 

@@ -40,7 +40,7 @@ module Api
             success: false,
             error: "Configuration validation failed",
             details: e.message
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         rescue StandardError => e
           ErrorService.handle_error(
             e,

@@ -5,9 +5,10 @@ class OnboardingService
 
   STEPS = [
     { name: "personal_info", required: true },
-    { name: "banking_details", required: true },
-    { name: "tax_info", required: false },
-    { name: "cv_upload", required: true }
+    { name: "banking", required: true },
+    { name: "skills", required: true },
+    { name: "contract", required: true },
+    { name: "welcome", required: false }
   ].freeze
 
   def initialize(consultant)
@@ -25,9 +26,32 @@ class OnboardingService
     end
   end
 
+  def resume_onboarding
+    initialize_onboarding if @consultant.onboarding_steps.empty?
+
+    AuditLog.create!(
+      action: "onboarding_resumed",
+      resource_type: "Consultant",
+      resource_id: @consultant.id,
+      user: @consultant.user,
+      change_data: { status: @consultant.onboarding_status }
+    )
+
+    {
+      completed_steps: @consultant.onboarding_steps.completed.count,
+      total_steps: STEPS.count,
+      current_step: @consultant.onboarding_steps.where(status: ["pending", "in_progress"]).ordered.first
+    }
+  end
+
   def complete_step(step_name, data = {})
     step = @consultant.onboarding_steps.find_by(step_name: step_name)
     raise InvalidStepError, "Invalid step: #{step_name}" unless step
+
+    # Ensure previous step is completed
+    if (prev_step = step.previous_step) && !prev_step.completed?
+      raise StepNotReadyError, "Previous step must be completed first"
+    end
 
     # Validate step data based on step name
     validate_step_data(step_name, data)
@@ -68,13 +92,16 @@ class OnboardingService
     when "personal_info"
       raise Error, "Bio is required" if data["bio"].blank?
       raise Error, "Phone is required" if data["phone"].blank?
-    when "banking_details"
+    when "banking"
       required = %w[bank_name account_number branch_code account_type]
       missing = required - data.keys
       raise Error, "Missing banking fields: #{missing.join(', ')}" if missing.any?
-    when "cv_upload"
-      # Validation handled by ActiveStorage presence check usually,
-      # but here we might check if a file was uploaded in a separate call
+    when "skills"
+      raise Error, "Skills are required" if data["skills"].blank?
+    when "contract"
+      raise Error, "Contract must be accepted" unless data["contract_accepted"]
+    when "welcome"
+      # No validation needed
     end
   end
 
@@ -85,22 +112,42 @@ class OnboardingService
         bio: data["bio"],
         metadata: (@consultant.metadata || {}).merge(phone: data["phone"], linkedin_url: data["linkedin_url"])
       )
-    when "banking_details"
+    when "banking"
       @consultant.update!(banking_details: data)
-    when "tax_info"
-      @consultant.update!(
-        tax_number: data["tax_number"],
-        vat_number: data["vat_number"]
-      )
+    when "skills"
+      @consultant.update!(skills: data["skills"])
+    when "contract"
+      @consultant.update!(metadata: (@consultant.metadata || {}).merge(contract_accepted: true, signed_at: Time.current))
     end
   end
 
   def check_completion
+    return if @consultant.onboarding_status == "completed"
+
     required_steps = STEPS.select { |s| s[:required] }.map { |s| s[:name] }
     completed_steps = @consultant.onboarding_steps.where(status: "completed").pluck(:step_name)
 
     if (required_steps - completed_steps).empty?
       @consultant.update!(onboarding_status: "completed")
+
+      # Sync to Airtable
+      ProfileSyncJob.perform_later(@consultant.id, { status: "Active" })
+
+      # Send welcome email
+      Adapters::ResendAdapter.send_email(
+        to: @consultant.user.email,
+        template: "welcome_pack",
+        variables: { name: @consultant.user.email }
+      )
+
+      # Log completion
+      AuditLog.create!(
+        action: "onboarding_completed",
+        resource_type: "Consultant",
+        resource_id: @consultant.id,
+        user: @consultant.user,
+        change_data: { status: "completed" }
+      )
     end
   end
 

@@ -4,6 +4,7 @@ class ApplicationController < ActionController::API
   before_action :set_correlation_id
   after_action :add_correlation_id_header
 
+  # Rescue all other errors (must come first, more specific rescues override)
   rescue_from StandardError do |e|
     ErrorHandler.handle(e, context: {
       controller: controller_name,
@@ -12,6 +13,15 @@ class ApplicationController < ActionController::API
     }, severity: :high)
 
     render json: { error: "Internal Server Error", reference: RequestStore.store[:correlation_id] }, status: :internal_server_error
+  end
+
+  # Rescue authorization errors with specific handler (more specific, overrides StandardError)
+  rescue_from Authorizable::AuthorizationError do |e|
+    render json: {
+      success: false,
+      error: e.message,
+      errors: [ e.message ]
+    }, status: :forbidden
   end
 
   private

@@ -26,7 +26,7 @@ module Webhooks
       render json: {
         status: "error",
         message: "Invalid webhook payload: #{e.message}"
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     rescue ProjectService::ProjectError => e
       Rails.logger.error("Failed to process deal webhook: #{e.message}")
       render json: {

@@ -27,10 +27,10 @@ module Api
               extracted_data: extracted_data
             }, status: :created
           rescue CvParserService::ParseError => e
-            render json: { success: false, errors: [ e.message ] }, status: :unprocessable_entity
+            render json: { success: false, errors: [ e.message ] }, status: :unprocessable_content
           end
         else
-          render json: { success: false, errors: cv_upload.errors.full_messages }, status: :unprocessable_entity
+          render json: { success: false, errors: cv_upload.errors.full_messages }, status: :unprocessable_content
         end
       rescue ActiveRecord::RecordNotFound
         render json: { success: false, errors: [ "Consultant not found" ] }, status: :not_found

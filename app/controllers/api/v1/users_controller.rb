@@ -3,6 +3,8 @@
 module Api
   module V1
     class UsersController < ApplicationController
+      include Authorizable
+
       before_action :authenticate_user!
       before_action :authorize_admin!, except: [ :me ]
       before_action :set_user, only: [ :show, :update_roles ]
@@ -58,7 +60,7 @@ module Api
           success: false,
           error: e.message,
           errors: [ e.message ]
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       rescue ActionController::ParameterMissing => e
         render json: {
           success: false,
@@ -129,38 +131,6 @@ module Api
           total_count: collection.total_count,
           per_page: collection.limit_value
         }
-      end
-
-      # Authentication methods
-      def authenticate_user!
-        token = request.headers["Authorization"]&.gsub(/^Bearer /, "")
-
-        if token.blank?
-          render json: {
-            success: false,
-            error: "Authentication required",
-            errors: [ "You must be logged in to access this resource" ]
-          }, status: :unauthorized
-          return
-        end
-
-        # Find session by token
-        session = Session.find_by(token: token)
-
-        if session.nil? || session.expired?
-          render json: {
-            success: false,
-            error: "Invalid or expired session",
-            errors: [ "Your session has expired. Please log in again." ]
-          }, status: :unauthorized
-          return
-        end
-
-        @current_user = session.user
-      end
-
-      def current_user
-        @current_user
       end
     end
   end
