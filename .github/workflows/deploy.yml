@@ -16,25 +16,71 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Determine environment
+      - name: Determine environment and service IDs
         id: env
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "environment=production" >> $GITHUB_OUTPUT
+            echo "web_service_id=${{ secrets.RENDER_WEB_SERVICE_ID_PRODUCTION }}" >> $GITHUB_OUTPUT
+            echo "worker_service_id=${{ secrets.RENDER_WORKER_SERVICE_ID_PRODUCTION }}" >> $GITHUB_OUTPUT
+            echo "auto_deploy=false" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" == "refs/heads/staging" ]; then
             echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "web_service_id=${{ secrets.RENDER_WEB_SERVICE_ID_STAGING }}" >> $GITHUB_OUTPUT
+            echo "worker_service_id=${{ secrets.RENDER_WORKER_SERVICE_ID_STAGING }}" >> $GITHUB_OUTPUT
+            echo "auto_deploy=true" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" == "refs/heads/qa" ]; then
             echo "environment=qa" >> $GITHUB_OUTPUT
+            echo "web_service_id=${{ secrets.RENDER_WEB_SERVICE_ID_QA }}" >> $GITHUB_OUTPUT
+            echo "worker_service_id=${{ secrets.RENDER_WORKER_SERVICE_ID_QA }}" >> $GITHUB_OUTPUT
+            echo "auto_deploy=false" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
             echo "environment=development" >> $GITHUB_OUTPUT
+            echo "web_service_id=${{ secrets.RENDER_WEB_SERVICE_ID_DEV }}" >> $GITHUB_OUTPUT
+            echo "worker_service_id=${{ secrets.RENDER_WORKER_SERVICE_ID_DEV }}" >> $GITHUB_OUTPUT
+            echo "auto_deploy=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy to Render
+      - name: Deploy Web Service to Render
+        if: steps.env.outputs.auto_deploy == 'true'
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets[format('RENDER_SERVICE_ID_{0}', steps.env.outputs.environment)] }}
+          SERVICE_ID: ${{ steps.env.outputs.web_service_id }}
+          ENVIRONMENT: ${{ steps.env.outputs.environment }}
         run: |
-          curl -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+          echo "Deploying web service to $ENVIRONMENT environment..."
+          response=$(curl -X POST "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d '{"clearCache": false}'
+            -d '{"clearCache": false}')
+          echo "Deploy response: $response"
+          deploy_id=$(echo $response | jq -r '.id')
+          echo "Deploy ID: $deploy_id"
+
+      - name: Deploy Worker Service to Render
+        if: steps.env.outputs.auto_deploy == 'true'
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ steps.env.outputs.worker_service_id }}
+          ENVIRONMENT: ${{ steps.env.outputs.environment }}
+        run: |
+          echo "Deploying worker service to $ENVIRONMENT environment..."
+          response=$(curl -X POST "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}')
+          echo "Deploy response: $response"
+          deploy_id=$(echo $response | jq -r '.id')
+          echo "Deploy ID: $deploy_id"
+
+      - name: Manual Deployment Notice
+        if: steps.env.outputs.auto_deploy == 'false'
+        env:
+          ENVIRONMENT: ${{ steps.env.outputs.environment }}
+        run: |
+          echo "⚠️  Manual deployment required for $ENVIRONMENT environment"
+          echo "This is a controlled environment that requires manual approval."
+          echo "Please deploy manually through the Render dashboard or use the Render CLI."
+          echo ""
+          echo "Web Service ID: ${{ steps.env.outputs.web_service_id }}"
+          echo "Worker Service ID: ${{ steps.env.outputs.worker_service_id }}"
