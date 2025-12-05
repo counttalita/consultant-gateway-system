@@ -145,6 +145,9 @@ module Adapters
     rescue Utils::CircuitBreaker::OpenCircuitError => e
       Rails.logger.error("Airtable Circuit Breaker OPEN: #{e.message}")
       raise ApiError, "Airtable service temporarily unavailable"
+    rescue Utils::RetryableOperation::MaxRetriesExceededError => e
+      # Convert MaxRetriesExceededError to ApiError for consistency
+      raise ApiError, e.message
     end
 
     def self.circuit_breaker

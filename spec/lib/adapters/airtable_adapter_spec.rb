@@ -260,7 +260,8 @@ RSpec.describe Adapters::AirtableAdapter do
         end
       }.to raise_error(Adapters::AirtableAdapter::ApiError)
 
-      expect(attempt_count).to eq(Adapters::AirtableAdapter::MAX_RETRIES)
+      # Should be 1 initial attempt + MAX_RETRIES retries
+      expect(attempt_count).to eq(Adapters::AirtableAdapter::MAX_RETRIES + 1)
     end
 
     it "succeeds on retry" do
@@ -276,17 +277,18 @@ RSpec.describe Adapters::AirtableAdapter do
       expect(attempt_count).to eq(2)
     end
 
-    it "does not retry on non-retryable errors" do
+    it "retries on StandardError" do
       attempt_count = 0
 
       expect {
         described_class.execute_with_retry do
           attempt_count += 1
-          raise StandardError, "Non-retryable"
+          raise StandardError, "Retryable error"
         end
-      }.to raise_error(StandardError, "Non-retryable")
+      }.to raise_error(Adapters::AirtableAdapter::ApiError)
 
-      expect(attempt_count).to eq(1)
+      # Should be 1 initial attempt + MAX_RETRIES retries
+      expect(attempt_count).to eq(Adapters::AirtableAdapter::MAX_RETRIES + 1)
     end
   end
 

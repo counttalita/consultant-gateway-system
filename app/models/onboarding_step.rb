@@ -5,7 +5,7 @@ class OnboardingStep < ApplicationRecord
   # Validations
   validates :step_name, presence: true, uniqueness: { scope: :consultant_id }
   validates :status, presence: true, inclusion: { in: %w[pending in_progress completed] }
-  validates :step_name, inclusion: { in: %w[personal_info banking_details tax_info cv_upload] }
+  validates :step_name, inclusion: { in: %w[personal_info banking skills contract welcome] }
 
   # Scopes
   scope :pending, -> { where(status: "pending") }
@@ -15,7 +15,7 @@ class OnboardingStep < ApplicationRecord
   scope :for_consultant, ->(consultant) { where(consultant: consultant) }
 
   # Constants
-  STEP_ORDER = %w[personal_info banking_details tax_info cv_upload].freeze
+  STEP_ORDER = %w[personal_info banking skills contract welcome].freeze
 
   # Class methods
   def self.initialize_for_consultant(consultant)

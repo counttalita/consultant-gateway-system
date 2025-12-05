@@ -2,11 +2,12 @@
 
 module Utils
   class CircuitBreaker
-    class CircuitOpenError < StandardError; end
+    class OpenCircuitError < StandardError; end
 
-    attr_reader :state, :failure_count, :last_failure_time
+    attr_reader :state, :failure_count, :last_failure_time, :name
 
-    def initialize(failure_threshold: 5, reset_timeout: 60)
+    def initialize(name = nil, failure_threshold: 5, reset_timeout: 60)
+      @name = name
       @failure_threshold = failure_threshold
       @reset_timeout = reset_timeout
       @failure_count = 0
@@ -18,7 +19,7 @@ module Utils
       check_state
 
       if @state == :open
-        raise CircuitOpenError, "Circuit is open due to failures"
+        raise OpenCircuitError, "Circuit is open due to failures"
       end
 
       begin
@@ -30,6 +31,9 @@ module Utils
         raise e
       end
     end
+
+    # Alias for execute to support both calling conventions
+    alias call execute
 
     private
 
@@ -58,14 +62,16 @@ module Utils
 
     def open
       @state = :open
-      Rails.logger.warn("Circuit breaker opened after #{@failure_count} failures")
+      name_prefix = @name ? "#{@name} " : ""
+      Rails.logger.warn("#{name_prefix}Circuit breaker opened after #{@failure_count} failures")
     end
 
     def reset
       @state = :closed
       @failure_count = 0
       @last_failure_time = nil
-      Rails.logger.info("Circuit breaker reset to closed state")
+      name_prefix = @name ? "#{@name} " : ""
+      Rails.logger.info("#{name_prefix}Circuit breaker reset to closed state")
     end
   end
 end
