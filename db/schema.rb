@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_05_035207) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_05_073300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,11 +79,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_035207) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "harvest_id"
+    t.text "manual_review_reason"
+    t.jsonb "metadata"
+    t.boolean "needs_manual_review", default: false, null: false
     t.string "onboarding_status", default: "pending"
     t.jsonb "skills", default: []
+    t.string "tax_number"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.decimal "utilization_percentage", precision: 5, scale: 2, default: "0.0"
+    t.string "vat_number"
     t.string "xero_id"
     t.index ["airtable_id"], name: "index_consultants_on_airtable_id", unique: true, where: "(airtable_id IS NOT NULL)"
     t.index ["availability_status"], name: "index_consultants_on_availability_status"
@@ -131,6 +136,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_035207) do
   end
 
   create_table "project_assignments", force: :cascade do |t|
+    t.decimal "allocated_hours", precision: 8, scale: 2, default: "0.0", null: false
     t.bigint "consultant_id", null: false
     t.datetime "created_at", null: false
     t.date "end_date"

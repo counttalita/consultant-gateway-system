@@ -17,5 +17,7 @@ FactoryBot.define do
     availability_status { "available" }
     utilization_percentage { 50.0 }
     onboarding_status { "completed" }
+    tax_number { nil }
+    vat_number { nil }
   end
 end

@@ -117,11 +117,12 @@ class AuditLogger
     # @param action [String, Symbol] The action being logged
     # @param user [User] The user performing the action (optional for system actions)
     # @param resource [Object] The resource being acted upon (optional)
+    # @param resource_type [String] Explicit resource type (optional, overrides resource.class.name)
     # @param change_data [Hash] Changes being made (optional)
     # @param ip_address [String] IP address of the request (optional)
     # @param metadata [Hash] Additional context data (optional)
     # @return [AuditLog] The created audit log entry
-    def log(action:, user: nil, resource: nil, change_data: {}, ip_address: nil, metadata: {})
+    def log(action:, user: nil, resource: nil, resource_type: nil, change_data: {}, ip_address: nil, metadata: {})
       # Sanitize sensitive data from both change_data and metadata
       sanitized_changes = sanitize_sensitive_data(change_data)
       sanitized_metadata = sanitize_sensitive_data(metadata)
@@ -129,7 +130,7 @@ class AuditLogger
       AuditLog.create!(
         user: user,
         action: action.to_s,
-        resource_type: resource&.class&.name,
+        resource_type: resource_type || resource&.class&.name,
         resource_id: resource&.id,
         change_data: sanitized_changes,
         ip_address: ip_address,

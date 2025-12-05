@@ -126,7 +126,7 @@ module Api
         when "personal_info"
           params.require(:step).permit(:first_name, :last_name, :phone_number, :id_number)
         when "banking"
-          params.require(:step).permit(:bank_name, :account_number, :branch_code, :account_type)
+          params.require(:step).permit(:bank_name, :account_number, :branch_code, :account_type, :tax_number, :vat_number)
         when "skills"
           params.require(:step).permit(:bio, skills: [])
         when "contract"

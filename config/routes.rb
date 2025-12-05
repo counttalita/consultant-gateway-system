@@ -30,14 +30,48 @@ Rails.application.routes.draw do
       get "onboarding", to: "onboarding#show"
       post "onboarding/initialize", to: "onboarding#initialize_onboarding"
       post "onboarding/steps/:step_name", to: "onboarding#complete_step"
+
+      # Zapier routes
+      get "zapier/ping", to: "zapier#ping"
+      post "zapier/triggers/:event_type", to: "zapier#receive_event"
+
+      # User management routes (admin only)
+      resources :users, only: [ :index, :show ] do
+        collection do
+          get "me", to: "users#me"
+        end
+        member do
+          patch "roles", to: "users#update_roles"
+        end
+      end
+
+      # Finance dashboard routes (finance/admin only)
+      namespace :finance do
+        get "dashboard", to: "finance_dashboard#dashboard"
+        get "utilization", to: "finance_dashboard#utilization"
+        get "profitability", to: "finance_dashboard#profitability"
+        get "aging", to: "finance_dashboard#aging"
+        get "upcoming_payments", to: "finance_dashboard#upcoming_payments"
+        get "export", to: "finance_dashboard#export"
+      end
+
+      # Availability and talent pool routes
+      namespace :availability do
+        get "talent_pool", to: "availability#talent_pool"
+        post "filter_by_skills", to: "availability#filter_by_skills"
+      end
+
+      patch "availability/:consultant_id", to: "availability#update_availability"
     end
   end
 
   # Webhook routes
   namespace :webhooks do
     # Tender webhooks
+    post "tenders", to: "tenders#create"
+
     # Deal webhooks
-    # etc.
+    post "deals", to: "deals#create"
   end
 
   # Defines the root path route ("/")

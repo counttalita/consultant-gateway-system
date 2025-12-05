@@ -34,6 +34,15 @@ gem "image_processing", "~> 1.2"
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+# HTTP Client for API integrations
+gem "httparty", "~> 0.21.0"
+
+# Google Drive API integration
+gem "google-apis-drive_v3", "~> 0.50"
+
+# Pagination
+gem "kaminari", "~> 1.2"
+
 # Environment variable management
 gem "dotenv-rails", groups: [ :development, :test ]
 

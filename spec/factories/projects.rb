@@ -1,14 +1,14 @@
 FactoryBot.define do
   factory :project do
-    name { "MyString" }
-    client_name { "MyString" }
-    airtable_deal_id { "MyString" }
-    clickup_project_id { "MyString" }
-    clickup_url { "MyString" }
-    drive_folder_id { "MyString" }
-    drive_url { "MyString" }
-    status { "MyString" }
-    start_date { "2025-12-04" }
-    end_date { "2025-12-04" }
+    name { Faker::Company.bs.titleize }
+    client_name { Faker::Company.name }
+    airtable_deal_id { nil }
+    clickup_project_id { nil }
+    clickup_url { nil }
+    drive_folder_id { nil }
+    drive_url { nil }
+    status { "setup" }
+    start_date { Date.current }
+    end_date { Date.current + 30.days }
   end
 end

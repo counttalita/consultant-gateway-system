@@ -1,9 +1,10 @@
 FactoryBot.define do
   factory :project_assignment do
-    project { nil }
-    consultant { nil }
-    role { "MyString" }
-    start_date { "2025-12-04" }
-    end_date { "2025-12-04" }
+    association :project
+    association :consultant
+    role { "Consultant" }
+    start_date { Date.current }
+    end_date { Date.current + 30.days }
+    allocated_hours { 40.0 }
   end
 end

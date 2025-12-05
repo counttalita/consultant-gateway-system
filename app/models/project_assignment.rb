@@ -5,6 +5,7 @@ class ProjectAssignment < ApplicationRecord
 
   # Validations
   validates :consultant_id, uniqueness: { scope: :project_id, message: "is already assigned to this project" }
+  validates :allocated_hours, numericality: { greater_than_or_equal_to: 0 }, allow_nil: false
   validate :end_date_after_start_date
 
   # Scopes
@@ -17,6 +18,7 @@ class ProjectAssignment < ApplicationRecord
 
   # Callbacks
   after_create :update_consultant_availability
+  after_update :update_consultant_availability, if: :saved_change_to_allocated_hours?
   after_destroy :update_consultant_availability
 
   # Instance methods
@@ -49,6 +51,11 @@ class ProjectAssignment < ApplicationRecord
   end
 
   def update_consultant_availability
-    consultant.update_utilization! if consultant.respond_to?(:update_utilization!)
+    # Use AvailabilityService to update consultant availability and utilization
+    service = AvailabilityService.new
+    service.update_on_project_assignment(consultant, self)
+  rescue StandardError => e
+    Rails.logger.error("Failed to update consultant availability after assignment: #{e.message}")
+    # Don't raise - assignment should succeed even if availability update fails
   end
 end

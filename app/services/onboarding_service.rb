@@ -267,7 +267,9 @@ class OnboardingService
           bank_name: data[:bank_name],
           account_number: data[:account_number],
           branch_code: data[:branch_code],
-          account_type: data[:account_type]
+          account_type: data[:account_type],
+          tax_number: data[:tax_number],
+          vat_number: data[:vat_number]
         }
       )
     when "skills"

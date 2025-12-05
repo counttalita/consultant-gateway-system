@@ -1,4 +1,7 @@
 class Project < ApplicationRecord
+  # Callbacks
+  after_create :create_drive_folder_async
+
   # Associations
   has_many :project_assignments, dependent: :destroy
   has_many :consultants, through: :project_assignments
@@ -77,6 +80,14 @@ class Project < ApplicationRecord
   end
 
   private
+
+  def create_drive_folder_async
+    # Create folder asynchronously to avoid blocking project creation
+    # If this fails, the project will still be created but without a Drive folder
+    ProjectSetupJob.perform_later(id)
+  rescue StandardError => e
+    Rails.logger.error("Failed to queue Drive folder creation for project #{id}: #{e.message}")
+  end
 
   def end_date_after_start_date
     return if start_date.nil? || end_date.nil?

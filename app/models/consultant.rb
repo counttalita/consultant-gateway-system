@@ -12,10 +12,12 @@ class Consultant < ApplicationRecord
   validates :bio, length: { maximum: 1000 }, allow_blank: true
   validates :availability_status, inclusion: { in: %w[available partially_available unavailable] }
   validates :onboarding_status, inclusion: { in: %w[pending in_progress completed] }
-  validates :utilization_percentage, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }, allow_nil: true
+  validates :utilization_percentage, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :airtable_id, uniqueness: true, allow_nil: true
   validates :harvest_id, uniqueness: true, allow_nil: true
   validates :xero_id, uniqueness: true, allow_nil: true
+  validates :tax_number, format: { with: /\A\d{10}\z/, message: "must be 10 digits" }, allow_blank: true
+  validates :vat_number, format: { with: /\A\d{10}\z/, message: "must be 10 digits" }, allow_blank: true
   validate :skills_must_be_array
   validate :banking_details_structure
 
@@ -95,5 +97,7 @@ class Consultant < ApplicationRecord
     if missing_keys.any?
       errors.add(:banking_details, "missing required fields: #{missing_keys.join(', ')}")
     end
+
+    # Optional fields: tax_number, vat_number
   end
 end
