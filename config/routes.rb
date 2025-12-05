@@ -18,8 +18,18 @@ Rails.application.routes.draw do
       get "auth/session", to: "auth#session"
 
       # Profile routes
+      resources :consultants, only: [] do
+        member do
+          get "profile", to: "profiles#show"
+          patch "profile", to: "profiles#update"
+          post "cv", to: "cv_uploads#create"
+        end
+      end
+
       # Onboarding routes
-      # etc.
+      get "onboarding", to: "onboarding#show"
+      post "onboarding/initialize", to: "onboarding#initialize_onboarding"
+      post "onboarding/steps/:step_name", to: "onboarding#complete_step"
     end
   end
 

@@ -44,6 +44,15 @@ class User < ApplicationRecord
     roles.include?(CONSULTANT_ROLE)
   end
 
+  def ensure_consultant_record
+    return consultant if consultant.present?
+    create_consultant!(
+      availability_status: "available",
+      onboarding_status: "pending",
+      skills: []
+    )
+  end
+
   def add_role(role_name)
     return false unless VALID_ROLES.include?(role_name.to_s)
     return false if consultant? && role_name.to_s != CONSULTANT_ROLE

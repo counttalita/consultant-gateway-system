@@ -42,6 +42,11 @@ RSpec.configure do |config|
   # Configure FactoryBot
   config.include FactoryBot::Syntax::Methods
 
+  # Configure ActiveJob test adapter
+  config.before(:each) do
+    ActiveJob::Base.queue_adapter = :test
+  end
+
   # Configure DatabaseCleaner
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction

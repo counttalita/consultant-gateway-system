@@ -41,6 +41,10 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
+  # PDF and DOCX parsing
+  gem "pdf-reader", "~> 2.11"
+  gem "docx", "~> 0.8.0"
+
   # RSpec testing framework
   gem "rspec-rails", "~> 7.0"
   gem "factory_bot_rails", "~> 6.4"
