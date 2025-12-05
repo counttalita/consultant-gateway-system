@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -9,18 +9,42 @@ export default function Login() {
     const [step, setStep] = useState('email'); // 'email' or 'otp'
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { requestOtp, verifyOtp } = useAuth();
+    const [successMessage, setSuccessMessage] = useState('');
+    const { requestOtp, verifyOtp, user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (user) {
+            const from = location.state?.from?.pathname || getRoleBasedRoute(user);
+            navigate(from, { replace: true });
+        }
+    }, [user, navigate, location]);
+
+    // Helper function to determine redirect route based on user role
+    const getRoleBasedRoute = (userData) => {
+        const userRoles = userData.roles || [];
+        
+        // Priority: admin > finance > consultant
+        if (userRoles.includes('admin')) return '/admin';
+        if (userRoles.includes('finance')) return '/finance';
+        return '/consultant';
+    };
 
     const handleEmailSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccessMessage('');
+        
         try {
             await requestOtp(email);
             setStep('otp');
+            setSuccessMessage('Verification code sent to your email');
         } catch (err) {
-            setError('Failed to send OTP. Please check your email.');
+            const errorMessage = err.message || 'Failed to send OTP. Please check your email and try again.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -30,19 +54,36 @@ export default function Login() {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccessMessage('');
+        
         try {
             const data = await verifyOtp(email, otp);
-            const userRoles = data.user.roles || [];
+            const userData = data.user || data;
             
-            // Redirect based on role priority
-            if (userRoles.includes('admin')) navigate('/admin');
-            else if (userRoles.includes('finance')) navigate('/finance');
-            else navigate('/consultant');
+            // Show success message briefly before redirect
+            setSuccessMessage('Login successful! Redirecting...');
+            
+            // Redirect based on role
+            const redirectPath = getRoleBasedRoute(userData);
+            
+            // Small delay to show success message
+            setTimeout(() => {
+                navigate(redirectPath, { replace: true });
+            }, 500);
         } catch (err) {
-            setError('Invalid OTP. Please try again.');
+            const errorMessage = err.message || 'Invalid OTP. Please try again.';
+            setError(errorMessage);
+            setOtp(''); // Clear OTP field on error
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleChangeEmail = () => {
+        setStep('email');
+        setOtp('');
+        setError('');
+        setSuccessMessage('');
     };
 
     return (
@@ -58,8 +99,15 @@ export default function Login() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
                         <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                        <p className="text-sm text-green-700">{successMessage}</p>
                     </div>
                 )}
 
@@ -110,11 +158,15 @@ export default function Login() {
                         <div className="flex justify-between items-center">
                             <button
                                 type="button"
-                                onClick={() => setStep('email')}
+                                onClick={handleChangeEmail}
                                 className="text-sm text-indigo-600 hover:text-indigo-500"
+                                disabled={loading}
                             >
                                 Change email
                             </button>
+                            <span className="text-xs text-gray-500">
+                                Sent to: {email}
+                            </span>
                         </div>
 
                         <div>

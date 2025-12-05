@@ -10,8 +10,15 @@ export default function FinanceLayout() {
     const location = useLocation();
 
     const handleLogout = async () => {
-        await logout();
-        navigate('/login');
+        try {
+            await logout();
+            // Navigate to login after successful logout
+            navigate('/login', { replace: true });
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Navigate to login even if logout API fails
+            navigate('/login', { replace: true });
+        }
     };
 
     const navItems = [

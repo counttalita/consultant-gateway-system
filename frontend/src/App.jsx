@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import ConsultantLayout from './layouts/ConsultantLayout';
 import ConsultantDashboard from './pages/consultant/Dashboard';
@@ -16,21 +17,50 @@ import TalentPool from './pages/admin/TalentPool';
 import FinanceLayout from './layouts/FinanceLayout';
 import FinanceDashboard from './pages/finance/Dashboard';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+/**
+ * Root redirect component that sends users to their role-appropriate dashboard
+ */
+const RootRedirect = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" />;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
-  return children;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Redirect based on user roles
+  const userRoles = user.roles || [];
+  
+  if (userRoles.includes('admin')) {
+    return <Navigate to="/admin" replace />;
+  }
+  
+  if (userRoles.includes('finance')) {
+    return <Navigate to="/finance" replace />;
+  }
+  
+  if (userRoles.includes('consultant')) {
+    return <Navigate to="/consultant" replace />;
+  }
+
+  // Fallback to login if no recognized role
+  return <Navigate to="/login" replace />;
 };
 
 function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
 
+      {/* Admin routes */}
       <Route path="/admin" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <AdminLayout />
@@ -43,6 +73,7 @@ function App() {
         <Route path="settings" element={<div className="p-6">Settings Placeholder</div>} />
       </Route>
 
+      {/* Consultant routes */}
       <Route path="/consultant" element={
         <ProtectedRoute allowedRoles={['consultant']}>
           <ConsultantLayout />
@@ -53,6 +84,7 @@ function App() {
         <Route path="onboarding" element={<Onboarding />} />
       </Route>
 
+      {/* Finance routes - accessible by both finance and admin roles */}
       <Route path="/finance" element={
         <ProtectedRoute allowedRoles={['finance', 'admin']}>
           <FinanceLayout />
@@ -63,7 +95,11 @@ function App() {
         <Route path="payments" element={<div className="p-6">Payments Placeholder</div>} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/login" />} />
+      {/* Root redirect - sends users to their appropriate dashboard */}
+      <Route path="/" element={<RootRedirect />} />
+      
+      {/* 404 - redirect to root which will handle authentication */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

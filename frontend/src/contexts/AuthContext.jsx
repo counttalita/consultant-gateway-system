@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authService from '../services/auth.service';
 
 const AuthContext = createContext(null);
@@ -6,53 +7,129 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sessionChecked, setSessionChecked] = useState(false);
 
     useEffect(() => {
         checkAuth();
     }, []);
 
+    // Check authentication status on mount
     const checkAuth = async () => {
+        // Only check if we haven't checked yet
+        if (sessionChecked) return;
+
         try {
             const userData = await authService.getCurrentUser();
             setUser(userData);
         } catch (error) {
+            // If error is 401, user is not authenticated
+            // Clear any stale session data
+            if (error.status === 401) {
+                localStorage.removeItem('session_token');
+            }
             setUser(null);
         } finally {
             setLoading(false);
+            setSessionChecked(true);
         }
     };
 
+    // Request OTP for email
     const requestOtp = async (email) => {
-        await authService.requestOtp(email);
-    };
-
-    const verifyOtp = async (email, otp) => {
-        const response = await authService.validateOtp(email, otp);
-        // Assuming response contains user or token. If session based, we might need to fetch user again.
-        // Based on backend, validateOtp likely returns { success: true, user: ... }
-        if (response.user) {
-            setUser(response.user);
-        } else {
-            // If not returned, fetch it
-            await checkAuth();
-        }
-        return response;
-    };
-
-    const logout = async () => {
         try {
-            await authService.logout();
-            setUser(null);
+            const response = await authService.requestOtp(email);
+            return response;
         } catch (error) {
-            console.error('Logout failed', error);
+            throw error;
         }
+    };
+
+    // Verify OTP and establish session
+    const verifyOtp = async (email, otp) => {
+        try {
+            const response = await authService.validateOtp(email, otp);
+            
+            // Update user state with returned user data
+            if (response.user) {
+                setUser(response.user);
+            } else {
+                // If user not in response, fetch it
+                await checkAuth();
+            }
+            
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    // Logout and clear session
+    const logout = useCallback(async () => {
+        try {
+            // Call logout endpoint to invalidate session on server
+            await authService.logout();
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+            // Continue with client-side cleanup even if API call fails
+        } finally {
+            // Clear user state
+            setUser(null);
+            
+            // Clear any local storage items
+            localStorage.removeItem('session_token');
+            
+            // Clear session storage if used
+            sessionStorage.clear();
+        }
+    }, []);
+
+    // Refresh user data
+    const refreshUser = useCallback(async () => {
+        try {
+            const userData = await authService.getCurrentUser();
+            setUser(userData);
+            return userData;
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+            throw error;
+        }
+    }, []);
+
+    // Check if user has specific role
+    const hasRole = useCallback((role) => {
+        if (!user || !user.roles) return false;
+        return user.roles.includes(role);
+    }, [user]);
+
+    // Check if user has any of the specified roles
+    const hasAnyRole = useCallback((roles) => {
+        if (!user || !user.roles) return false;
+        return roles.some(role => user.roles.includes(role));
+    }, [user]);
+
+    const value = {
+        user,
+        loading,
+        requestOtp,
+        verifyOtp,
+        logout,
+        refreshUser,
+        hasRole,
+        hasAnyRole,
+        isAuthenticated: !!user,
     };
 
     return (
-        <AuthContext.Provider value={{ user, requestOtp, verifyOtp, logout, loading }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within AuthProvider');
+    }
+    return context;
+};
