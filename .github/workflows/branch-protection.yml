@@ -34,6 +34,7 @@ jobs:
               - '.ruby-version'
               - 'Rakefile'
               - '.rubocop.yml'
+              - '!.github/**'
             frontend:
               - 'frontend/**'
 
