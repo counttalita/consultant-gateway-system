@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'pdf-reader'
-require 'docx'
+require "pdf-reader"
+require "docx"
 
 class CvParserService
   class ParseError < StandardError; end
@@ -24,9 +24,9 @@ class CvParserService
   def extract_text
     @file.open do |local_file|
       case @file.content_type
-      when 'application/pdf'
+      when "application/pdf"
         parse_pdf(local_file)
-      when 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      when "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         parse_docx(local_file)
       else
         raise ParseError, "Unsupported file type: #{@file.content_type}"
@@ -65,7 +65,7 @@ class CvParserService
       "Financial Modeling", "Data Analysis", "Tableau", "Power BI", "Excel",
       "JIRA", "Confluence", "Trello", "Asana", "Slack", "Teams"
     ]
-    
+
     known_skills.select { |skill| text.match?(/#{Regexp.escape(skill)}/i) }
   end
 
@@ -73,19 +73,19 @@ class CvParserService
     # Basic extraction looking for keywords indicating experience sections or durations
     # This is a placeholder for more advanced NLP logic
     experience_markers = []
-    
+
     # Look for years of experience patterns (e.g. "5 years experience", "Senior", "Lead")
     if text.match?(/\d+\+?\s*years/i) || text.match?(/Senior|Lead|Manager|Director|Head of/i)
       experience_markers << "Experience detected"
     end
-    
+
     experience_markers
   end
-  
+
   def extract_qualifications(text)
     # Look for degree keywords
     degrees = [
-      "Bachelor", "Master", "PhD", "MBA", "BSc", "BA", "MSc", "Diploma", 
+      "Bachelor", "Master", "PhD", "MBA", "BSc", "BA", "MSc", "Diploma",
       "Certificate", "Certified", "PMP", "Prince2", "PROSCI"
     ]
     degrees.select { |degree| text.match?(/#{Regexp.escape(degree)}/i) }

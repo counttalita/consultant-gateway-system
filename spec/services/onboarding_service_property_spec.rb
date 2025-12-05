@@ -20,7 +20,7 @@ RSpec.describe OnboardingService, type: :service do
       it "validates any onboarding step submission before allowing progression" do
         property_test(iterations: 100) do
           # Create consultant with onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "in_progress")
           service.initialize_onboarding(consultant)
 
@@ -39,10 +39,10 @@ RSpec.describe OnboardingService, type: :service do
               }
             when "banking"
               {
-                bank_name: ["FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec"].sample,
+                bank_name: [ "FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec" ].sample,
                 account_number: "#{Rantly { range(100000000, 99999999999) }}",
                 branch_code: "#{Rantly { range(100000, 999999) }}",
-                account_type: ["current", "savings", "transmission"].sample
+                account_type: [ "current", "savings", "transmission" ].sample
               }
             when "skills"
               {
@@ -89,7 +89,7 @@ RSpec.describe OnboardingService, type: :service do
       it "rejects invalid data for any onboarding step" do
         property_test(iterations: 100) do
           # Create consultant with onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "in_progress")
           service.initialize_onboarding(consultant)
 
@@ -125,7 +125,7 @@ RSpec.describe OnboardingService, type: :service do
       it "prevents progression to next step if previous step is not completed" do
         property_test(iterations: 100) do
           # Create consultant with onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "in_progress")
           service.initialize_onboarding(consultant)
 
@@ -162,7 +162,7 @@ RSpec.describe OnboardingService, type: :service do
       it "marks consultant as Active in Airtable and triggers welcome pack for any completed onboarding" do
         property_test(iterations: 100) do
           # Create consultant with onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "in_progress")
           service.initialize_onboarding(consultant)
 
@@ -178,10 +178,10 @@ RSpec.describe OnboardingService, type: :service do
               }
             when "banking"
               {
-                bank_name: ["FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec"].sample,
+                bank_name: [ "FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec" ].sample,
                 account_number: "#{Rantly { range(100000000, 99999999999) }}",
                 branch_code: "#{Rantly { range(100000, 999999) }}",
-                account_type: ["current", "savings", "transmission"].sample
+                account_type: [ "current", "savings", "transmission" ].sample
               }
             when "skills"
               {
@@ -241,7 +241,7 @@ RSpec.describe OnboardingService, type: :service do
       it "saves progress and allows resumption from last completed step for any consultant" do
         property_test(iterations: 100) do
           # Create consultant with onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "in_progress")
           service.initialize_onboarding(consultant)
 
@@ -263,10 +263,10 @@ RSpec.describe OnboardingService, type: :service do
               }
             when "banking"
               {
-                bank_name: ["FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec"].sample,
+                bank_name: [ "FNB", "Standard Bank", "ABSA", "Nedbank", "Capitec" ].sample,
                 account_number: "#{Rantly { range(100000000, 99999999999) }}",
                 branch_code: "#{Rantly { range(100000, 999999) }}",
-                account_type: ["current", "savings", "transmission"].sample
+                account_type: [ "current", "savings", "transmission" ].sample
               }
             when "skills"
               {
@@ -317,7 +317,7 @@ RSpec.describe OnboardingService, type: :service do
       it "initializes steps if consultant returns with no existing steps" do
         property_test(iterations: 100) do
           # Create consultant without onboarding steps
-          user = create(:user, roles: ["consultant"])
+          user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
 
           # Resume onboarding (should initialize steps)
