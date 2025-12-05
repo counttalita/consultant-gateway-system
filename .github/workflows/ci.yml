@@ -6,8 +6,38 @@ on:
     branches: [ main, dev, staging, qa ]
 
 jobs:
+  # Detect what changed to determine which jobs to run
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'app/**'
+              - 'config/**'
+              - 'db/**'
+              - 'lib/**'
+              - 'spec/**'
+              - 'Gemfile*'
+              - '.ruby-version'
+              - 'Rakefile'
+              - '.rubocop.yml'
+            frontend:
+              - 'frontend/**'
+
   scan_ruby:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
 
     steps:
       - name: Checkout code
@@ -26,6 +56,8 @@ jobs:
       
   lint:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     env:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
@@ -52,6 +84,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
 
     services:
       postgres:
@@ -104,19 +138,33 @@ jobs:
 
   deployment_readiness:
     runs-on: ubuntu-latest
-    needs: [scan_ruby, lint, test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/dev')
+    needs: [changes, scan_ruby, lint, test]
+    if: |
+      always() &&
+      github.event_name == 'push' && 
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/dev') &&
+      (needs.changes.outputs.backend != 'true' || (needs.scan_ruby.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success'))
     
     steps:
       - name: Deployment readiness check
         run: |
-          echo "✓ All CI checks passed"
-          echo "✓ Security scans completed"
-          echo "✓ Code linting passed"
-          echo "✓ All tests passed"
-          echo ""
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
+          echo ""
+          
+          if [ "${{ needs.changes.outputs.backend }}" == "true" ]; then
+            echo "✓ Backend changes detected"
+            echo "✓ Security scans completed"
+            echo "✓ Code linting passed"
+            echo "✓ All tests passed"
+          else
+            echo "ℹ️  No backend changes detected - backend tests skipped"
+          fi
+          
+          if [ "${{ needs.changes.outputs.frontend }}" == "true" ]; then
+            echo "✓ Frontend changes detected"
+          fi
+          
           echo ""
           if [ "${{ github.ref }}" == "refs/heads/dev" ] || [ "${{ github.ref }}" == "refs/heads/staging" ]; then
             echo "🚀 Auto-deployment will proceed"

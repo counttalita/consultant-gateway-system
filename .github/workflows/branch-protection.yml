@@ -9,6 +9,34 @@ on:
       - dev
 
 jobs:
+  # Detect what changed to determine which jobs to run
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'app/**'
+              - 'config/**'
+              - 'db/**'
+              - 'lib/**'
+              - 'spec/**'
+              - 'Gemfile*'
+              - '.ruby-version'
+              - 'Rakefile'
+              - '.rubocop.yml'
+            frontend:
+              - 'frontend/**'
+
   enforce-merge-path:
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +81,8 @@ jobs:
 
   require-tests-pass:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     services:
       postgres:
         image: postgres
