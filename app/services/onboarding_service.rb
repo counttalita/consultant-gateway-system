@@ -40,7 +40,7 @@ class OnboardingService
     {
       completed_steps: @consultant.onboarding_steps.completed.count,
       total_steps: STEPS.count,
-      current_step: @consultant.onboarding_steps.where(status: ["pending", "in_progress"]).ordered.first
+      current_step: @consultant.onboarding_steps.where(status: [ "pending", "in_progress" ]).ordered.first
     }
   end
 

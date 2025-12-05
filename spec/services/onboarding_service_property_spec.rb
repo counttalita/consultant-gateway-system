@@ -22,7 +22,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant with onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
           service.initialize_onboarding
@@ -62,7 +62,7 @@ RSpec.describe OnboardingService, type: :service do
             # Note: complete_step no longer returns a result hash, it raises on error
             # We need to wrap it to check success if we want to keep the test structure similar
             # or just expect it not to raise
-            
+
             begin
               service.complete_step(step_name, valid_data)
               step.reload
@@ -85,7 +85,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant with onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
           service.initialize_onboarding
@@ -115,7 +115,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant with onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
           service.initialize_onboarding
@@ -150,7 +150,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant with onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
           service.initialize_onboarding
@@ -222,7 +222,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant with onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
           service.initialize_onboarding
@@ -294,7 +294,7 @@ RSpec.describe OnboardingService, type: :service do
           # Create consultant without onboarding steps
           user = create(:user, roles: [ "consultant" ])
           consultant = create(:consultant, user: user, onboarding_status: "pending")
-          
+
           # Instantiate service with consultant
           service = described_class.new(consultant)
 
