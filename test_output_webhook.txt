@@ -1,0 +1,32 @@
+/Users/thabangphaleng/.rvm/rubies/ruby-3.3.6/lib/ruby/3.3.0/bundled_gems.rb:69: warning: /Users/thabangphaleng/.rvm/rubies/ruby-3.3.6/lib/ruby/3.3.0/csv.rb was loaded from the standard library, but will no longer be part of the default gems starting from Ruby 3.4.0.
+You can add csv to your Gemfile or gemspec to silence this warning.
+Also please contact the author of httparty-0.21.0 to request adding csv into its gemspec.
+Run options: include {:locations=>{"./spec/requests/webhooks/signature_validation_property_spec.rb"=>[59]}}
+...F
+
+Failures:
+
+  1) Webhook Signature Validation Property 65: Webhook Signature Validation rejects requests with missing signatures
+     Failure/Error: expect(JSON.parse(response.body)["error"]).to eq("Missing signature")
+
+       expected: "Missing signature"
+            got: "Unauthorized"
+
+       (compared using ==)
+     # ./spec/requests/webhooks/signature_validation_property_spec.rb:70:in `block (4 levels) in <top (required)>'
+     # ./spec/support/property_test_helpers.rb:11:in `block in property_test'
+     # ./spec/support/property_test_helpers.rb:10:in `property_test'
+     # ./spec/requests/webhooks/signature_validation_property_spec.rb:60:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:58:in `block (3 levels) in <top (required)>'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/strategy.rb:30:in `cleaning'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/cleaners.rb:34:in `block (2 levels) in cleaning'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/cleaners.rb:35:in `cleaning'
+     # ./spec/rails_helper.rb:57:in `block (2 levels) in <top (required)>'
+
+Finished in 0.3762 seconds (files took 2.21 seconds to load)
+4 examples, 1 failure
+
+Failed examples:
+
+rspec ./spec/requests/webhooks/signature_validation_property_spec.rb:59 # Webhook Signature Validation Property 65: Webhook Signature Validation rejects requests with missing signatures
+

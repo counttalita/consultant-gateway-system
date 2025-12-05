@@ -389,28 +389,30 @@ module Adapters
       end
     end
 
-    # Execute block with retry logic
+    # Execute block with retry logic and circuit breaker
     def execute_with_retry
-      attempt = 0
-      last_error = nil
-
-      while attempt < MAX_RETRIES
-        begin
-          return yield
-        rescue RateLimitError, ApiError => e
-          last_error = e
-          attempt += 1
-
-          if attempt < MAX_RETRIES
-            delay = calculate_backoff_delay(attempt)
-            Rails.logger.warn("Xero API call failed (attempt #{attempt}/#{MAX_RETRIES}): #{e.message}. Retrying in #{delay}s...")
-            sleep(delay)
-          end
+      circuit_breaker.call do
+        Utils::RetryableOperation.execute(
+          max_retries: MAX_RETRIES,
+          base_delay: BASE_DELAY,
+          on_error: ->(e, attempt, delay) {
+            if e.is_a?(RateLimitError)
+              Rails.logger.warn("Xero Rate Limit (attempt #{attempt}): #{e.message}. Retrying in #{delay}s...")
+            else
+              Rails.logger.warn("Xero API Error (attempt #{attempt}): #{e.message}. Retrying in #{delay}s...")
+            end
+          }
+        ) do
+          yield
         end
       end
+    rescue Utils::CircuitBreaker::OpenCircuitError => e
+      Rails.logger.error("Xero Circuit Breaker OPEN: #{e.message}")
+      raise ApiError, "Xero service temporarily unavailable"
+    end
 
-      Rails.logger.error("Xero API call failed after #{MAX_RETRIES} attempts: #{last_error.message}")
-      raise last_error
+    def circuit_breaker
+      @circuit_breaker ||= Utils::CircuitBreaker.new("XeroAdapter")
     end
 
     # Calculate exponential backoff delay

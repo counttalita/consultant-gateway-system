@@ -99,6 +99,14 @@ class AuthenticationService
     { user: user, session: session }
   end
 
+  # Create a session for a user directly (internal use or testing)
+  # @param user [User] The user to create a session for
+  # @param ip_address [String] Optional IP address
+  # @return [Session] The created session
+  def create_session(user:, ip_address: nil)
+    Session.create_for_user(user, ip_address: ip_address)
+  end
+
   # Validate session token and return user
   # @param token [String] Session token
   # @param ip_address [String] Optional IP address for activity tracking

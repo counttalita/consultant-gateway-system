@@ -123,31 +123,32 @@ module Adapters
       true
     end
 
-    # Execute a block with retry logic
+    # Execute a block with retry logic and circuit breaker
     # @yield Block to execute
     # @return Result of the block
     def self.execute_with_retry
-      attempt = 0
-      last_error = nil
-
-      while attempt < MAX_RETRIES
-        begin
-          return yield
-        rescue RateLimitError, ApiError => e
-          last_error = e
-          attempt += 1
-
-          if attempt < MAX_RETRIES
-            delay = calculate_backoff_delay(attempt)
-            Rails.logger.warn("Airtable API call failed (attempt #{attempt}/#{MAX_RETRIES}): #{e.message}. Retrying in #{delay}s...")
-            sleep(delay)
-          end
+      circuit_breaker.call do
+        Utils::RetryableOperation.execute(
+          max_retries: MAX_RETRIES,
+          base_delay: BASE_DELAY,
+          on_error: ->(e, attempt, delay) {
+            if e.is_a?(RateLimitError)
+              Rails.logger.warn("Airtable Rate Limit (attempt #{attempt}): #{e.message}. Retrying in #{delay}s...")
+            else
+              Rails.logger.warn("Airtable API Error (attempt #{attempt}): #{e.message}. Retrying in #{delay}s...")
+            end
+          }
+        ) do
+          yield
         end
       end
+    rescue Utils::CircuitBreaker::OpenCircuitError => e
+      Rails.logger.error("Airtable Circuit Breaker OPEN: #{e.message}")
+      raise ApiError, "Airtable service temporarily unavailable"
+    end
 
-      # All retries exhausted
-      Rails.logger.error("Airtable API call failed after #{MAX_RETRIES} attempts: #{last_error.message}")
-      raise last_error
+    def self.circuit_breaker
+      @circuit_breaker ||= Utils::CircuitBreaker.new("AirtableAdapter")
     end
 
     # Fetch a single record from Airtable API

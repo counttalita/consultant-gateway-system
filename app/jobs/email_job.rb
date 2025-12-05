@@ -12,9 +12,7 @@ class EmailJob < ApplicationJob
   # @param recipient [String] Email address of recipient
   # @param variables [Hash] Template variables
   def perform(email_type, recipient, variables = {})
-    adapter = Adapters::ResendAdapter.new
-
-    message_id = adapter.send_email(
+    message_id = Adapters::ResendAdapter.send_email(
       to: recipient,
       template: email_type,
       variables: variables

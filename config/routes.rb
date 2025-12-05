@@ -19,7 +19,7 @@ Rails.application.routes.draw do
 
       # Profile routes
       resources :consultants, only: [] do
-        member do
+        collection do
           get "profile", to: "profiles#show"
           patch "profile", to: "profiles#update"
           post "cv", to: "cv_uploads#create"
@@ -47,12 +47,23 @@ Rails.application.routes.draw do
 
       # Finance dashboard routes (finance/admin only)
       namespace :finance do
-        get "dashboard", to: "finance_dashboard#dashboard"
+        get "dashboard", to: "finance_dashboard#index"
+        get "revenue", to: "finance_dashboard#revenue"
+        get "outstanding_invoices", to: "finance_dashboard#outstanding_invoices"
         get "utilization", to: "finance_dashboard#utilization"
         get "profitability", to: "finance_dashboard#profitability"
-        get "aging", to: "finance_dashboard#aging"
-        get "upcoming_payments", to: "finance_dashboard#upcoming_payments"
+        get "payment_aging", to: "finance_dashboard#payment_aging"
         get "export", to: "finance_dashboard#export"
+      end
+
+      # Admin dashboard routes (admin only)
+      namespace :admin do
+        get "dashboard", to: "admin_dashboard#index"
+        get "dashboard/active_users", to: "admin_dashboard#active_users"
+        get "dashboard/integration_health", to: "admin_dashboard#integration_health"
+        get "dashboard/activity_trends", to: "admin_dashboard#activity_trends"
+        get "dashboard/errors", to: "admin_dashboard#errors"
+        get "dashboard/data_quality", to: "admin_dashboard#data_quality"
       end
 
       # Availability and talent pool routes
@@ -62,6 +73,10 @@ Rails.application.routes.draw do
       end
 
       patch "availability/:consultant_id", to: "availability#update_availability"
+
+      # Configuration management routes (admin only)
+      get "config", to: "config#show"
+      post "config/reload", to: "config#reload"
     end
   end
 
