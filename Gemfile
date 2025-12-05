@@ -76,6 +76,9 @@ group :test do
   # Test helpers
   gem "shoulda-matchers", "~> 6.0"
   gem "database_cleaner-active_record", "~> 2.1"
+
+  # Code coverage
+  gem "simplecov", "~> 0.22", require: false
 end
 
 gem "request_store", "~> 1.7"

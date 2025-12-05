@@ -35,3 +35,6 @@
 /.kiro
 ../.kiro
 
+# Ignore test coverage reports
+/coverage
+
