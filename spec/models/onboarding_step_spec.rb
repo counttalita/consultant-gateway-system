@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe OnboardingStep, type: :model do
   describe "validations" do
     subject { build(:onboarding_step) }
-    
+
     it { should validate_presence_of(:step_name) }
     it { should validate_uniqueness_of(:step_name).scoped_to(:consultant_id) }
     it { should validate_presence_of(:status) }
@@ -46,7 +46,7 @@ RSpec.describe OnboardingStep, type: :model do
     it "can complete a step" do
       step.start!
       step.complete!({ some_data: "value" })
-      
+
       expect(step.status).to eq("completed")
       expect(step.completed_at).to be_present
       expect(step.data["some_data"]).to eq("value")
@@ -55,7 +55,7 @@ RSpec.describe OnboardingStep, type: :model do
 
   describe "navigation" do
     let(:consultant) { create(:consultant) }
-    
+
     before do
       OnboardingStep.initialize_for_consultant(consultant)
     end
@@ -63,7 +63,7 @@ RSpec.describe OnboardingStep, type: :model do
     it "knows the next step" do
       first_step = consultant.onboarding_steps.find_by(step_name: "personal_info")
       next_step = first_step.next_step
-      
+
       expect(next_step).to be_present
       expect(next_step.step_name).to eq("banking")
     end
@@ -71,11 +71,11 @@ RSpec.describe OnboardingStep, type: :model do
     it "knows the previous step" do
       second_step = consultant.onboarding_steps.find_by(step_name: "banking")
       prev_step = second_step.previous_step
-      
+
       expect(prev_step).to be_present
       expect(prev_step.step_name).to eq("personal_info")
     end
-    
+
     it "returns nil for previous step of first step" do
       first_step = consultant.onboarding_steps.find_by(step_name: "personal_info")
       expect(first_step.previous_step).to be_nil
