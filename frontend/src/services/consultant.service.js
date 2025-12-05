@@ -1,36 +1,32 @@
-import api from './api';
+import BaseService from './BaseService';
 
-const consultantService = {
+class ConsultantService extends BaseService {
+  constructor() {
+    super('/consultants');
+  }
+
   async getProfile(id) {
-    const response = await api.get(`/consultants/${id}/profile`);
-    return response.data;
-  },
+    return this.get(`/${id}/profile`);
+  }
 
   async updateProfile(id, profileData) {
-    const response = await api.patch(`/consultants/${id}/profile`, profileData);
-    return response.data;
-  },
+    return this.patch(`/${id}/profile`, profileData);
+  }
 
-  async uploadCv(id, formData) {
-    const response = await api.post(`/consultants/${id}/cv`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  },
+  async uploadCv(id, formData, onUploadProgress = null) {
+    return this.uploadFile(`/${id}/cv`, formData, onUploadProgress);
+  }
 
   async updateAvailability(consultantId, availabilityStatus) {
-    const response = await api.patch(`/api/v1/availability/${consultantId}`, {
+    return this.patch(`/availability/${consultantId}`, {
       availability_status: availabilityStatus
     });
-    return response.data;
-  },
+  }
   
   async getTalentPool() {
-    const response = await api.get('/availability/talent_pool');
-    return response.data;
+    return this.get('/availability/talent_pool');
   }
-};
+}
 
+const consultantService = new ConsultantService();
 export default consultantService;

@@ -1,25 +1,38 @@
-import api from './api';
+import BaseService from './BaseService';
 
-const adminService = {
-  async getUsers() {
-    const response = await api.get('/users');
-    return response.data;
-  },
+class AdminService extends BaseService {
+  constructor() {
+    super('');
+  }
+
+  async getUsers(params = {}) {
+    return this.get('/users', { params });
+  }
 
   async getUser(id) {
-    const response = await api.get(`/users/${id}`);
-    return response.data;
-  },
+    return this.get(`/users/${id}`);
+  }
 
   async updateUserRoles(id, roles) {
-    const response = await api.patch(`/users/${id}/roles`, { roles });
-    return response.data;
-  },
+    return this.patch(`/users/${id}/roles`, { roles });
+  }
+
+  async deactivateUser(id) {
+    return this.patch(`/users/${id}/deactivate`);
+  }
+
+  async getDashboard() {
+    return this.get('/admin/dashboard');
+  }
+
+  async getIntegrationHealth() {
+    return this.get('/admin/integration_health');
+  }
 
   async getSystemHealth() {
-    const response = await api.get('/health');
-    return response.data;
+    return this.get('/health');
   }
-};
+}
 
+const adminService = new AdminService();
 export default adminService;

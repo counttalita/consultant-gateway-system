@@ -1,22 +1,28 @@
-import api from './api';
+import BaseService from './BaseService';
 
-const onboardingService = {
+class OnboardingService extends BaseService {
+  constructor() {
+    super('/onboarding');
+  }
+
   async getStatus() {
-    const response = await api.get('/onboarding');
-    return response.data;
-  },
+    return this.get('');
+  }
 
   async initialize() {
-    const response = await api.post('/onboarding/initialize');
-    return response.data;
-  },
+    return this.post('/initialize');
+  }
 
   async completeStep(stepName, stepData) {
-    const response = await api.post(`/onboarding/steps/${stepName}`, {
+    return this.post(`/steps/${stepName}`, {
       step_data: stepData
     });
-    return response.data;
   }
-};
 
+  async getStepData(stepName) {
+    return this.get(`/steps/${stepName}`);
+  }
+}
+
+const onboardingService = new OnboardingService();
 export default onboardingService;

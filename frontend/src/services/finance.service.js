@@ -1,42 +1,46 @@
-import api from './api';
+import BaseService from './BaseService';
 
-const financeService = {
+class FinanceService extends BaseService {
+  constructor() {
+    super('/finance');
+  }
+
   async getDashboard() {
-    const response = await api.get('/finance/dashboard');
-    return response.data;
-  },
+    return this.get('/dashboard');
+  }
 
   async getRevenue() {
-    const response = await api.get('/finance/revenue');
-    return response.data;
-  },
+    return this.get('/revenue');
+  }
 
   async getOutstandingInvoices() {
-    const response = await api.get('/finance/outstanding_invoices');
-    return response.data;
-  },
+    return this.get('/outstanding_invoices');
+  }
 
   async getUtilization() {
-    const response = await api.get('/finance/utilization');
-    return response.data;
-  },
+    return this.get('/utilization');
+  }
 
   async getProfitability() {
-    const response = await api.get('/finance/profitability');
-    return response.data;
-  },
+    return this.get('/profitability');
+  }
 
   async getPaymentAging() {
-    const response = await api.get('/finance/payment_aging');
-    return response.data;
-  },
+    return this.get('/payment_aging');
+  }
 
   async exportData(format = 'csv') {
-    const response = await api.get(`/finance/export?format=${format}`, {
-      responseType: 'blob'
-    });
-    return response.data;
+    return this.downloadFile(`/export?format=${format}`);
   }
-};
 
+  async triggerMonthEnd(month, year) {
+    return this.post('/month_end', { month, year });
+  }
+
+  async generateSimplePayExport(period) {
+    return this.downloadFile(`/simplepay_export?period=${period}`);
+  }
+}
+
+const financeService = new FinanceService();
 export default financeService;

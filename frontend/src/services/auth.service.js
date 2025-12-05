@@ -1,30 +1,30 @@
-import api from './api';
+import BaseService from './BaseService';
 
-const authService = {
+class AuthService extends BaseService {
+  constructor() {
+    super('/auth');
+  }
+
   async requestOtp(email) {
-    const response = await api.post('/auth/request-otp', { email });
-    return response.data;
-  },
+    return this.post('/request-otp', { email });
+  }
 
   async validateOtp(email, otp) {
-    const response = await api.post('/auth/validate-otp', { email, otp });
-    return response.data;
-  },
+    return this.post('/validate-otp', { email, otp });
+  }
 
   async logout() {
-    const response = await api.delete('/auth/logout');
-    return response.data;
-  },
+    return this.delete('/logout');
+  }
 
   async getSession() {
-    const response = await api.get('/auth/session');
-    return response.data;
-  },
+    return this.get('/session');
+  }
 
   async getCurrentUser() {
-    const response = await api.get('/users/me');
-    return response.data;
+    return this.get('/users/me');
   }
-};
+}
 
+const authService = new AuthService();
 export default authService;
