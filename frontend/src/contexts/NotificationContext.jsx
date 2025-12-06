@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
-import { NotificationContext } from './NotificationContext';
+import { createContext, useState, useCallback } from 'react';
+import NotificationContainer from '../components/shared/NotificationContainer';
+
+export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
@@ -58,6 +60,10 @@ export const NotificationProvider = ({ children }) => {
   return (
     <NotificationContext.Provider value={value}>
       {children}
+      <NotificationContainer
+        notifications={notifications}
+        onClose={removeNotification}
+      />
     </NotificationContext.Provider>
   );
 };

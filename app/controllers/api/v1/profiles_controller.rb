@@ -5,6 +5,20 @@ module Api
       before_action :set_consultant
 
       def show
+        # Get active project assignments with project details
+        active_assignments = @consultant.project_assignments.active.includes(:project).map do |assignment|
+          {
+            id: assignment.id,
+            project_id: assignment.project.id,
+            project_name: assignment.project.name,
+            client_name: assignment.project.client_name,
+            role: assignment.role,
+            allocated_hours: assignment.allocated_hours,
+            start_date: assignment.start_date,
+            end_date: assignment.end_date
+          }
+        end
+
         render json: {
           id: @consultant.id,
           bio: @consultant.bio,
@@ -17,7 +31,8 @@ module Api
           hourly_rate: @consultant.metadata&.dig("hourly_rate"),
           onboarding_status: @consultant.onboarding_status,
           availability_status: @consultant.availability_status,
-          utilization_percentage: @consultant.utilization_percentage
+          utilization_percentage: @consultant.utilization_percentage,
+          project_assignments: active_assignments
         }
       end
 

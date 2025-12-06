@@ -1,136 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { DollarSign, FileText, TrendingUp, Users, Loader2, Download } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import financeService from '../../services/finance.service';
+import { useNotification } from '../../hooks/useNotification';
+import { downloadFile } from '../../utils/formatters';
+import {
+  RevenueMetrics,
+  OutstandingInvoices,
+  ConsultantUtilization,
+  ProjectProfitability,
+  PeriodSelector,
+} from '../../components/finance';
+import Button from '../../components/shared/Button';
+import MetricCard from '../../components/admin/MetricCard';
+import { DollarSign, FileText, TrendingUp, Users } from 'lucide-react';
+import { formatCurrency, formatPercentage } from '../../utils/formatters';
 
 export default function FinanceDashboard() {
-    const [dashboardData, setDashboardData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('current_month');
+  const [exporting, setExporting] = useState(false);
+  const { showSuccess, showError } = useNotification();
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await financeService.getDashboard();
+      setDashboardData(data);
+    } catch (err) {
+      showError('Failed to fetch finance data');
+      console.error('Dashboard fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [showError]);
 
-    const fetchDashboardData = async () => {
-        try {
-            const data = await financeService.getDashboard();
-            setDashboardData(data);
-        } catch (err) {
-            // Fallback mock data for demo if API fails or isn't ready
-            setDashboardData({
-                total_revenue: 150000,
-                outstanding_invoices: 45000,
-                utilization_rate: 78,
-                active_consultants: 12,
-                monthly_revenue: [12000, 15000, 11000, 18000, 20000, 15000]
-            });
-            // setError('Failed to fetch finance data');
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    fetchDashboardData();
+  }, [selectedPeriod, fetchDashboardData]);
 
-    const handleExport = async () => {
-        try {
-            await financeService.exportData();
-            // Handle file download (blob)
-        } catch (err) {
-            console.error("Export failed");
-        }
-    };
+  const handleExport = async (format) => {
+    setExporting(true);
+    try {
+      const blob = await financeService.exportData(format, selectedPeriod);
+      const filename = `financial_data_${selectedPeriod}.${format}`;
+      downloadFile(blob, filename);
+      showSuccess(`Data exported successfully as ${format.toUpperCase()}`);
+    } catch (err) {
+      showError('Failed to export data');
+      console.error('Export error:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
-    if (loading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>;
-
+  if (loading) {
     return (
-        <div className="max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Finance Dashboard</h1>
-                <button 
-                    onClick={handleExport}
-                    className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export Report
-                </button>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatsCard 
-                    title="Total Revenue" 
-                    value={`$${dashboardData?.total_revenue?.toLocaleString()}`} 
-                    icon={DollarSign} 
-                    color="bg-green-100 text-green-600"
-                />
-                <StatsCard 
-                    title="Outstanding Invoices" 
-                    value={`$${dashboardData?.outstanding_invoices?.toLocaleString()}`} 
-                    icon={FileText} 
-                    color="bg-yellow-100 text-yellow-600"
-                />
-                <StatsCard 
-                    title="Avg. Utilization" 
-                    value={`${dashboardData?.utilization_rate}%`} 
-                    icon={TrendingUp} 
-                    color="bg-blue-100 text-blue-600"
-                />
-                <StatsCard 
-                    title="Active Consultants" 
-                    value={dashboardData?.active_consultants} 
-                    icon={Users} 
-                    color="bg-purple-100 text-purple-600"
-                />
-            </div>
-
-            {/* Charts Section (Placeholder for now) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
-                    <div className="h-64 flex items-end space-x-4">
-                        {dashboardData?.monthly_revenue?.map((val, i) => (
-                            <div key={i} className="flex-1 bg-indigo-500 rounded-t-md hover:bg-indigo-600 transition-all" 
-                                 style={{ height: `${(val / 25000) * 100}%` }}></div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs text-gray-500">
-                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                    </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <DollarSign className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Invoice Paid</p>
-                                        <p className="text-xs text-gray-500">INV-2024-00{i}</p>
-                                    </div>
-                                </div>
-                                <span className="text-sm font-semibold text-gray-900">+$4,500</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
     );
-}
+  }
 
-function StatsCard({ title, value, icon: Icon, color }) {
-    return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-                <div className={`p-2 rounded-lg ${color}`}>
-                    <Icon className="w-5 h-5" />
-                </div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
+  const {
+    current_month_revenue = 0,
+    outstanding_invoices_total = 0,
+    average_utilization = 0,
+    active_consultants = 0,
+    revenue_trend = 0,
+    revenue_metrics = {},
+    outstanding_invoices = {},
+    consultant_utilization = {},
+    project_profitability = {},
+  } = dashboardData || {};
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Finance Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Monitor revenue, invoices, and consultant utilization
+          </p>
         </div>
-    );
+        <div className="flex items-center space-x-3">
+          <PeriodSelector value={selectedPeriod} onChange={setSelectedPeriod} />
+          <Button
+            onClick={() => handleExport('csv')}
+            disabled={exporting}
+            variant="outline"
+            size="sm"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            CSV
+          </Button>
+          <Button
+            onClick={() => handleExport('excel')}
+            disabled={exporting}
+            variant="outline"
+            size="sm"
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Excel
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Current Month Revenue"
+          value={formatCurrency(current_month_revenue)}
+          icon={DollarSign}
+          trend={revenue_trend}
+          status="success"
+        />
+        <MetricCard
+          title="Outstanding Invoices"
+          value={formatCurrency(outstanding_invoices_total)}
+          icon={FileText}
+          status="warning"
+        />
+        <MetricCard
+          title="Avg. Utilization"
+          value={formatPercentage(average_utilization, 1)}
+          icon={TrendingUp}
+          status="info"
+        />
+        <MetricCard
+          title="Active Consultants"
+          value={active_consultants}
+          icon={Users}
+          status="default"
+        />
+      </div>
+
+      {/* Revenue and Invoices Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RevenueMetrics data={revenue_metrics} loading={loading} />
+        <OutstandingInvoices data={outstanding_invoices} loading={loading} />
+      </div>
+
+      {/* Consultant Utilization */}
+      <ConsultantUtilization data={consultant_utilization} loading={loading} />
+
+      {/* Project Profitability */}
+      <ProjectProfitability data={project_profitability} loading={loading} />
+    </div>
+  );
 }

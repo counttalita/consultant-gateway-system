@@ -9,6 +9,49 @@ class BaseService {
   constructor(basePath = '') {
     this.basePath = basePath;
     this.api = api;
+    this.abortControllers = new Map(); // Track abort controllers for request cancellation
+  }
+
+  /**
+   * Create an abort controller for request cancellation
+   * @param {string} key - Unique key to identify the request
+   * @returns {Object} Abort signal and cancel function
+   */
+  createCancelToken(key) {
+    // Cancel any existing request with the same key
+    this.cancelRequest(key);
+
+    const controller = new AbortController();
+    this.abortControllers.set(key, controller);
+
+    return {
+      signal: controller.signal,
+      cancel: () => this.cancelRequest(key)
+    };
+  }
+
+  /**
+   * Cancel a pending request
+   * @param {string} key - Unique key identifying the request
+   */
+  cancelRequest(key) {
+    const controller = this.abortControllers.get(key);
+    if (controller) {
+      controller.abort();
+      this.abortControllers.delete(key);
+      logger.debug(`Request cancelled: ${key}`);
+    }
+  }
+
+  /**
+   * Cancel all pending requests for this service
+   */
+  cancelAllRequests() {
+    this.abortControllers.forEach((controller, key) => {
+      controller.abort();
+      logger.debug(`Request cancelled: ${key}`);
+    });
+    this.abortControllers.clear();
   }
 
   /**
@@ -16,6 +59,13 @@ class BaseService {
    */
   async get(endpoint, config = {}) {
     try {
+      // Check for mock mode
+      const mockAdapter = await this.getMockAdapter();
+      if (mockAdapter?.isEnabled()) {
+        const mockResponse = await mockAdapter.handleRequest('GET', `${this.basePath}${endpoint}`, null, config);
+        if (mockResponse) return mockResponse.data;
+      }
+
       logger.debug(`GET ${this.basePath}${endpoint}`, config);
       const response = await this.api.get(`${this.basePath}${endpoint}`, config);
       logger.debug(`GET ${this.basePath}${endpoint} - Success`, response.data);
@@ -35,6 +85,13 @@ class BaseService {
    */
   async post(endpoint, data = {}, config = {}) {
     try {
+      // Check for mock mode
+      const mockAdapter = await this.getMockAdapter();
+      if (mockAdapter?.isEnabled()) {
+        const mockResponse = await mockAdapter.handleRequest('POST', `${this.basePath}${endpoint}`, data, config);
+        if (mockResponse) return mockResponse.data;
+      }
+
       logger.debug(`POST ${this.basePath}${endpoint}`, { data, config });
       const response = await this.api.post(`${this.basePath}${endpoint}`, data, config);
       logger.debug(`POST ${this.basePath}${endpoint} - Success`, response.data);
@@ -55,6 +112,13 @@ class BaseService {
    */
   async patch(endpoint, data = {}, config = {}) {
     try {
+      // Check for mock mode
+      const mockAdapter = await this.getMockAdapter();
+      if (mockAdapter?.isEnabled()) {
+        const mockResponse = await mockAdapter.handleRequest('PATCH', `${this.basePath}${endpoint}`, data, config);
+        if (mockResponse) return mockResponse.data;
+      }
+
       logger.debug(`PATCH ${this.basePath}${endpoint}`, { data, config });
       const response = await this.api.patch(`${this.basePath}${endpoint}`, data, config);
       logger.debug(`PATCH ${this.basePath}${endpoint} - Success`, response.data);
@@ -75,6 +139,13 @@ class BaseService {
    */
   async put(endpoint, data = {}, config = {}) {
     try {
+      // Check for mock mode
+      const mockAdapter = await this.getMockAdapter();
+      if (mockAdapter?.isEnabled()) {
+        const mockResponse = await mockAdapter.handleRequest('PUT', `${this.basePath}${endpoint}`, data, config);
+        if (mockResponse) return mockResponse.data;
+      }
+
       logger.debug(`PUT ${this.basePath}${endpoint}`, { data, config });
       const response = await this.api.put(`${this.basePath}${endpoint}`, data, config);
       logger.debug(`PUT ${this.basePath}${endpoint} - Success`, response.data);
@@ -91,10 +162,28 @@ class BaseService {
   }
 
   /**
+   * Get mock adapter instance (lazy loaded to avoid circular dependencies)
+   */
+  async getMockAdapter() {
+    if (!this._mockAdapter && import.meta.env.VITE_USE_MOCK_API === 'true') {
+      const { mockAdapter } = await import('./mockAdapter');
+      this._mockAdapter = mockAdapter;
+    }
+    return this._mockAdapter;
+  }
+
+  /**
    * Make a DELETE request
    */
   async delete(endpoint, config = {}) {
     try {
+      // Check for mock mode
+      const mockAdapter = await this.getMockAdapter();
+      if (mockAdapter?.isEnabled()) {
+        const mockResponse = await mockAdapter.handleRequest('DELETE', `${this.basePath}${endpoint}`, null, config);
+        if (mockResponse) return mockResponse.data;
+      }
+
       logger.debug(`DELETE ${this.basePath}${endpoint}`, config);
       const response = await this.api.delete(`${this.basePath}${endpoint}`, config);
       logger.debug(`DELETE ${this.basePath}${endpoint} - Success`, response.data);

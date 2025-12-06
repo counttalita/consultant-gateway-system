@@ -65,9 +65,12 @@ const shouldRetry = (error, retryCount) => {
  */
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Request interceptor for logging
+// Request interceptor for logging and performance tracking
 api.interceptors.request.use(
     (config) => {
+        // Add request start time for performance monitoring
+        config.metadata = { startTime: performance.now() };
+        
         logger.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
             params: config.params,
             data: config.data,
@@ -83,8 +86,23 @@ api.interceptors.request.use(
 // Response interceptor with retry logic and comprehensive error handling
 api.interceptors.response.use(
     (response) => {
+        // Calculate API response time
+        const duration = response.config.metadata?.startTime 
+            ? performance.now() - response.config.metadata.startTime 
+            : null;
+        
+        if (duration !== null) {
+            logger.measureApiCall(
+                response.config.url,
+                response.config.method?.toUpperCase(),
+                duration,
+                response.status
+            );
+        }
+        
         logger.debug(`API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
             status: response.status,
+            duration: duration ? `${duration.toFixed(2)}ms` : 'unknown',
             data: response.data,
         });
         return response;

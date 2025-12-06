@@ -1,44 +1,108 @@
 import BaseService from './BaseService';
 
+/**
+ * Finance Service
+ * Handles all finance-related API calls including revenue tracking,
+ * invoicing, and financial reporting
+ */
 class FinanceService extends BaseService {
   constructor() {
     super('/finance');
   }
 
-  async getDashboard() {
-    return this.get('/dashboard');
+  /**
+   * Get finance dashboard metrics
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Object>} Dashboard metrics
+   */
+  async getDashboard(options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getDashboard');
+    return this.get('/dashboard', { signal });
   }
 
-  async getRevenue() {
-    return this.get('/revenue');
+  /**
+   * Get revenue metrics
+   * @param {Object} params - Query parameters (period, etc.)
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Object>} Revenue data
+   */
+  async getRevenue(params = {}, options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getRevenue');
+    return this.get('/revenue', { params, signal });
   }
 
-  async getOutstandingInvoices() {
-    return this.get('/outstanding_invoices');
+  /**
+   * Get outstanding invoices
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Array>} Outstanding invoices
+   */
+  async getOutstandingInvoices(options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getOutstandingInvoices');
+    return this.get('/outstanding_invoices', { signal });
   }
 
-  async getUtilization() {
-    return this.get('/utilization');
+  /**
+   * Get consultant utilization metrics
+   * @param {Object} params - Query parameters (period, etc.)
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Array>} Utilization data
+   */
+  async getUtilization(params = {}, options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getUtilization');
+    return this.get('/utilization', { params, signal });
   }
 
-  async getProfitability() {
-    return this.get('/profitability');
+  /**
+   * Get project profitability metrics
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Array>} Profitability data
+   */
+  async getProfitability(options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getProfitability');
+    return this.get('/profitability', { signal });
   }
 
-  async getPaymentAging() {
-    return this.get('/payment_aging');
+  /**
+   * Get payment aging report
+   * @param {Object} options - Request options including signal for cancellation
+   * @returns {Promise<Object>} Payment aging data
+   */
+  async getPaymentAging(options = {}) {
+    const { signal } = options.cancelToken || this.createCancelToken('getPaymentAging');
+    return this.get('/payment_aging', { signal });
   }
 
-  async exportData(format = 'csv') {
-    return this.downloadFile(`/export?format=${format}`);
+  /**
+   * Export financial data
+   * @param {string} format - Export format (csv, excel)
+   * @param {Object} params - Query parameters (period, etc.)
+   * @returns {Promise<Blob>} File blob
+   */
+  async exportData(format = 'csv', params = {}) {
+    return this.downloadFile('/export', { 
+      params: { format, ...params }
+    });
   }
 
+  /**
+   * Trigger month-end processing
+   * @param {number} month - Month number (1-12)
+   * @param {number} year - Year
+   * @returns {Promise<Object>} Processing results
+   */
   async triggerMonthEnd(month, year) {
     return this.post('/month_end', { month, year });
   }
 
+  /**
+   * Generate SimplePay export file
+   * @param {string} period - Period in YYYY-MM format
+   * @returns {Promise<Blob>} CSV file blob
+   */
   async generateSimplePayExport(period) {
-    return this.downloadFile(`/simplepay_export?period=${period}`);
+    return this.downloadFile('/simplepay_export', { 
+      params: { period }
+    });
   }
 }
 
