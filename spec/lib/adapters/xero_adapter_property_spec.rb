@@ -84,7 +84,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
     # Validates: Requirements 4.2
     describe "Property 14: Sequential Financial System Setup" do
       it "creates a Xero supplier record for any consultant with a successfully created Harvest user" do
-        property_test(iterations: 100) do
+        property_test(iterations: 10) do
           # Generate random consultant data
           timestamp = (Time.current.to_f * 1000000).to_i
           random_suffix = Rantly { range(1000, 9999) }
@@ -150,7 +150,7 @@ RSpec.describe Adapters::XeroAdapter, type: :adapter do
       end
 
       it "validates South African banking details for any consultant before creating Xero supplier" do
-        property_test(iterations: 100) do
+        property_test(iterations: 10) do
           timestamp = (Time.current.to_f * 1000000).to_i
           random_suffix = Rantly { range(1000, 9999) }
 

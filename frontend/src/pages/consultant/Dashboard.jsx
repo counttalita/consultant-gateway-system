@@ -5,7 +5,7 @@ import { useNotification } from '../../hooks/useNotification';
 import consultantService from '../../services/consultant.service';
 import Card from '../../components/shared/Card';
 import Button from '../../components/shared/Button';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import SkeletonLoader from '../../components/shared/SkeletonLoader';
 import { cn } from '../../utils/cn';
 
 export default function ConsultantDashboard() {
@@ -108,8 +108,19 @@ export default function ConsultantDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <LoadingSpinner size="lg" showLabel label="Loading dashboard..." />
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-900">Consultant Dashboard</h1>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <SkeletonLoader type="metric" />
+                    <SkeletonLoader type="metric" />
+                    <SkeletonLoader type="metric" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <SkeletonLoader type="card" className="h-64" />
+                    <SkeletonLoader type="card" className="h-64" />
+                </div>
             </div>
         );
     }

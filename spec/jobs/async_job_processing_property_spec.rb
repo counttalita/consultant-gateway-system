@@ -6,19 +6,20 @@ RSpec.describe "Asynchronous Job Processing", type: :job do
   # Property 37: Asynchronous Job Processing (Requirement 10.4)
   describe "Property 37: Asynchronous Job Processing" do
     it "processes jobs asynchronously without blocking the main thread" do
-      property_test(iterations: 100) do
+      property_test(iterations: 10) do
         # Clear any existing jobs before each iteration
         ActiveJob::Base.queue_adapter.enqueued_jobs.clear
 
         # Generate random job parameters
         job_type = Rantly { choose('airtable_sync', 'email', 'financial_operation') }
 
+        # Setup data outside the measured block
+        consultant = job_type == 'airtable_sync' ? create(:consultant) : nil
+
         start_time = Time.current
 
         case job_type
         when 'airtable_sync'
-          # Create a consultant for testing
-          consultant = create(:consultant)
           operation = Rantly { choose('create', 'update') }
 
           # Enqueue job

@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [errorData, setErrorData] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const { showError } = useNotification();
+  const { showError, showNotification } = useNotification();
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -101,13 +101,19 @@ export default function AdminDashboard() {
   }, [autoRefresh, loadAllData]);
 
   const handleErrorDrillDown = (errorType) => {
-    // TODO: Navigate to detailed error view or open modal
-    console.log('Drill down into error type:', errorType);
+    showNotification({
+      type: 'info',
+      title: 'Coming Soon',
+      message: `Detailed view for ${errorType} errors is under development.`
+    });
   };
 
   const handleDataQualityDetails = (issueType) => {
-    // TODO: Navigate to detailed view or open modal
-    console.log('View data quality details for:', issueType);
+    showNotification({
+      type: 'info',
+      title: 'Coming Soon',
+      message: `Data quality details for ${issueType} are coming soon.`
+    });
   };
 
   if (loading) {

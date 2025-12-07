@@ -4,8 +4,8 @@ import authService from '../services/auth.service';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+export const AuthProvider = ({ children, initialUser = null }) => {
+    const [user, setUser] = useState(initialUser);
     const [loading, setLoading] = useState(true);
     const [sessionChecked, setSessionChecked] = useState(false);
 
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     const verifyOtp = async (email, otp) => {
         try {
             const response = await authService.validateOtp(email, otp);
-            
+
             // Update user state with returned user data
             if (response.user) {
                 setUser(response.user);
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
                 // If user not in response, fetch it
                 await checkAuth();
             }
-            
+
             return response;
         } catch (error) {
             throw error;
@@ -74,10 +74,10 @@ export const AuthProvider = ({ children }) => {
         } finally {
             // Clear user state
             setUser(null);
-            
+
             // Clear any local storage items
             localStorage.removeItem('session_token');
-            
+
             // Clear session storage if used
             sessionStorage.clear();
         }
