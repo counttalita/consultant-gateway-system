@@ -1,0 +1,126 @@
+name: Branch Protection
+
+on:
+  pull_request:
+    branches:
+      - main
+      - qa
+      - staging
+      - dev
+
+jobs:
+  # Detect what changed to determine which jobs to run
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'app/**'
+              - 'config/**'
+              - 'db/**'
+              - 'lib/**'
+              - 'spec/**'
+              - 'Gemfile*'
+              - '.ruby-version'
+              - 'Rakefile'
+              - '.rubocop.yml'
+              - '!.github/**'
+            frontend:
+              - 'frontend/**'
+
+  enforce-merge-path:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check merge path compliance
+        run: |
+          BASE_BRANCH="${{ github.base_ref }}"
+          HEAD_BRANCH="${{ github.head_ref }}"
+          
+          echo "Pull request from: $HEAD_BRANCH to: $BASE_BRANCH"
+          
+          # Define allowed merge paths
+          if [ "$BASE_BRANCH" = "main" ]; then
+            if [ "$HEAD_BRANCH" != "qa" ]; then
+              echo "❌ ERROR: Only 'qa' branch can be merged into 'main'"
+              echo "Current merge path: $HEAD_BRANCH → main"
+              echo "Required merge path: dev → staging → qa → main"
+              exit 1
+            fi
+          elif [ "$BASE_BRANCH" = "qa" ]; then
+            if [ "$HEAD_BRANCH" != "staging" ]; then
+              echo "❌ ERROR: Only 'staging' branch can be merged into 'qa'"
+              echo "Current merge path: $HEAD_BRANCH → qa"
+              echo "Required merge path: dev → staging → qa → main"
+              exit 1
+            fi
+          elif [ "$BASE_BRANCH" = "staging" ]; then
+            if [ "$HEAD_BRANCH" != "dev" ]; then
+              echo "❌ ERROR: Only 'dev' branch can be merged into 'staging'"
+              echo "Current merge path: $HEAD_BRANCH → staging"
+              echo "Required merge path: dev → staging → qa → main"
+              exit 1
+            fi
+          elif [ "$BASE_BRANCH" = "dev" ]; then
+            # Feature branches can merge into dev
+            if [[ "$HEAD_BRANCH" != feature/* ]] && [[ "$HEAD_BRANCH" != fix/* ]] && [[ "$HEAD_BRANCH" != hotfix/* ]]; then
+              echo "⚠️  WARNING: Expected feature/*, fix/*, or hotfix/* branch merging into dev"
+              echo "Current branch: $HEAD_BRANCH"
+            fi
+          fi
+          
+          echo "✅ Merge path is valid: $HEAD_BRANCH → $BASE_BRANCH"
+
+  require-tests-pass:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          bin/rails db:test:prepare
+          bundle exec rspec --fail-fast
+          
+      - name: Verify tests passed
+        run: |
+          echo "✅ All tests must pass before merging"

@@ -1,0 +1,41 @@
+/Users/thabangphaleng/.rvm/rubies/ruby-3.3.6/lib/ruby/3.3.0/bundled_gems.rb:69: warning: /Users/thabangphaleng/.rvm/rubies/ruby-3.3.6/lib/ruby/3.3.0/csv.rb was loaded from the standard library, but will no longer be part of the default gems starting from Ruby 3.4.0.
+You can add csv to your Gemfile or gemspec to silence this warning.
+Also please contact the author of httparty-0.21.0 to request adding csv into its gemspec.
+....F
+
+Failures:
+
+  1) ErrorService Property-Based Tests Property 34: Error Context Capture captures stack traces and metadata for all errors
+     Failure/Error:
+       expect(AuditLogger).to have_received(:log) do |args|
+         expect(args[:metadata]).to have_key(:stack_trace)
+         expect(args[:metadata][:stack_trace]).to be_an(Array)
+         expect(args[:metadata][:stack_trace]).not_to be_empty
+       end
+
+       (AuditLogger (class)).log(*(any args))
+           expected: 1 time with any arguments
+           received: 2 times with any arguments
+     # ./spec/services/error_service_property_spec.rb:64:in `rescue in block (5 levels) in <top (required)>'
+     # ./spec/services/error_service_property_spec.rb:53:in `block (5 levels) in <top (required)>'
+     # ./spec/support/property_test_helpers.rb:11:in `block in property_test'
+     # ./spec/support/property_test_helpers.rb:10:in `property_test'
+     # ./spec/services/error_service_property_spec.rb:52:in `block (4 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:58:in `block (3 levels) in <top (required)>'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/strategy.rb:30:in `cleaning'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/cleaners.rb:34:in `block (2 levels) in cleaning'
+     # /Users/thabangphaleng/.rvm/gems/ruby-3.3.6/gems/database_cleaner-core-2.0.1/lib/database_cleaner/cleaners.rb:35:in `cleaning'
+     # ./spec/rails_helper.rb:57:in `block (2 levels) in <top (required)>'
+     # ------------------
+     # --- Caused by: ---
+     # ArgumentError:
+     #   Test error
+     #   ./spec/services/error_service_property_spec.rb:55:in `block (5 levels) in <top (required)>'
+
+Finished in 0.18876 seconds (files took 1.59 seconds to load)
+5 examples, 1 failure
+
+Failed examples:
+
+rspec ./spec/services/error_service_property_spec.rb:51 # ErrorService Property-Based Tests Property 34: Error Context Capture captures stack traces and metadata for all errors
+

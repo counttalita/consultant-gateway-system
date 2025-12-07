@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Setup Git hooks for the project
+
+set -e
+
+echo "🔧 Setting up Git hooks..."
+
+# Create pre-push hook
+cat > .git/hooks/pre-push << 'EOF'
+#!/bin/bash
+
+echo "🔍 Running pre-push checks..."
+
+# Run RuboCop
+echo "📝 Checking code style with RuboCop..."
+bundle exec rubocop
+if [ $? -ne 0 ]; then
+  echo "❌ RuboCop failed. Please fix style issues before pushing."
+  echo "Run: bundle exec rubocop -a"
+  exit 1
+fi
+
+# Run Brakeman
+echo "🔒 Checking for security vulnerabilities with Brakeman..."
+bundle exec brakeman --no-pager --quiet
+if [ $? -ne 0 ]; then
+  echo "❌ Brakeman found security issues. Please fix before pushing."
+  exit 1
+fi
+
+# Run tests
+echo "🧪 Running test suite..."
+RAILS_ENV=test bundle exec rspec
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix failing tests before pushing."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
+exit 0
+EOF
+
+chmod +x .git/hooks/pre-push
+
+echo "✅ Git hooks installed successfully!"
+echo ""
+echo "The pre-push hook will now run automatically before each push."
+echo "It will check:"
+echo "  - Code style (RuboCop)"
+echo "  - Security vulnerabilities (Brakeman)"
+echo "  - Test suite (RSpec)"
+echo ""
+echo "To skip the hook (not recommended), use: git push --no-verify"

@@ -34,6 +34,9 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
+  # Stop running tests after first failure
+  config.fail_fast = true
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
@@ -41,6 +44,11 @@ RSpec.configure do |config|
 
   # Configure FactoryBot
   config.include FactoryBot::Syntax::Methods
+
+  # Configure ActiveJob test adapter
+  config.before(:each) do
+    ActiveJob::Base.queue_adapter = :test
+  end
 
   # Configure DatabaseCleaner
   config.before(:suite) do

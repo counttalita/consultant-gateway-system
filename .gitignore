@@ -31,3 +31,10 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Ignore Kiro IDE files
+/.kiro
+../.kiro
+
+# Ignore test coverage reports
+/coverage
+

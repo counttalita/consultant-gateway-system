@@ -20,7 +20,7 @@ RSpec.describe "Property-Based Testing Setup" do
       a = Rantly { string }
       b = Rantly { string }
       c = Rantly { string }
-      
+
       # (a + b) + c should equal a + (b + c)
       expect((a + b) + c).to eq(a + (b + c))
     end

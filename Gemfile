@@ -34,18 +34,31 @@ gem "image_processing", "~> 1.2"
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+# HTTP Client for API integrations
+gem "httparty", "~> 0.21.0"
+
+# Google Drive API integration
+gem "google-apis-drive_v3", "~> 0.50"
+
+# Pagination
+gem "kaminari", "~> 1.2"
+
 # Environment variable management
-gem "dotenv-rails", groups: [:development, :test]
+gem "dotenv-rails", groups: [ :development, :test ]
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
+  # PDF and DOCX parsing
+  gem "pdf-reader", "~> 2.11"
+  gem "docx", "~> 0.8.0"
+
   # RSpec testing framework
   gem "rspec-rails", "~> 7.0"
   gem "factory_bot_rails", "~> 6.4"
   gem "faker", "~> 3.2"
-  
+
   # Property-based testing
   gem "rantly", "~> 2.0"
 
@@ -63,4 +76,10 @@ group :test do
   # Test helpers
   gem "shoulda-matchers", "~> 6.0"
   gem "database_cleaner-active_record", "~> 2.1"
+
+  # Code coverage
+  gem "simplecov", "~> 0.22", require: false
 end
+
+gem "request_store", "~> 1.7"
+gem "csv"

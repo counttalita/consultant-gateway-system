@@ -1,51 +1,299 @@
+# Production Environment
 services:
+  # Production Web Service
   - type: web
-    name: consultant-gateway-web
+    name: consultant-gateway-web-production
     runtime: ruby
+    branch: main
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec puma -C config/puma.rb"
+    plan: standard
+    region: oregon
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: consultant-gateway-db
+          name: consultant-gateway-db-production
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
-          name: consultant-gateway-redis
+          name: consultant-gateway-redis-production
           property: connectionString
       - key: RAILS_ENV
         value: production
       - key: RAILS_MASTER_KEY
         sync: false
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: RAILS_MAX_THREADS
+        value: 5
+      - key: WEB_CONCURRENCY
+        value: 2
+    healthCheckPath: /health
     autoDeploy: false
 
+  # Production Worker Service
   - type: worker
-    name: consultant-gateway-worker
+    name: consultant-gateway-worker-production
     runtime: ruby
+    branch: main
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec sidekiq -C config/sidekiq.yml"
+    plan: standard
+    region: oregon
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: consultant-gateway-db
+          name: consultant-gateway-db-production
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
-          name: consultant-gateway-redis
+          name: consultant-gateway-redis-production
           property: connectionString
       - key: RAILS_ENV
         value: production
       - key: RAILS_MASTER_KEY
         sync: false
+      - key: RAILS_LOG_LEVEL
+        value: info
     autoDeploy: false
 
-databases:
-  - name: consultant-gateway-db
-    databaseName: consultant_gateway_production
-    user: consultant_gateway
+  # QA Web Service
+  - type: web
+    name: consultant-gateway-web-qa
+    runtime: ruby
+    branch: qa
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-qa
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-qa
+          property: connectionString
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+      - key: RAILS_MAX_THREADS
+        value: 5
+      - key: WEB_CONCURRENCY
+        value: 1
+    healthCheckPath: /health
+    autoDeploy: false
 
-  - name: consultant-gateway-redis
-    type: redis
+  # QA Worker Service
+  - type: worker
+    name: consultant-gateway-worker-qa
+    runtime: ruby
+    branch: qa
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec sidekiq -C config/sidekiq.yml"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-qa
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-qa
+          property: connectionString
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+    autoDeploy: false
+
+  # Staging Web Service
+  - type: web
+    name: consultant-gateway-web-staging
+    runtime: ruby
+    branch: staging
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-staging
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-staging
+          property: connectionString
+      - key: RAILS_ENV
+        value: staging
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+      - key: RAILS_MAX_THREADS
+        value: 5
+      - key: WEB_CONCURRENCY
+        value: 1
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Staging Worker Service
+  - type: worker
+    name: consultant-gateway-worker-staging
+    runtime: ruby
+    branch: staging
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec sidekiq -C config/sidekiq.yml"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-staging
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-staging
+          property: connectionString
+      - key: RAILS_ENV
+        value: staging
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+    autoDeploy: true
+
+  # Development Web Service
+  - type: web
+    name: consultant-gateway-web-dev
+    runtime: ruby
+    branch: dev
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-dev
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-dev
+          property: connectionString
+      - key: RAILS_ENV
+        value: development
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+      - key: RAILS_MAX_THREADS
+        value: 5
+      - key: WEB_CONCURRENCY
+        value: 1
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Development Worker Service
+  - type: worker
+    name: consultant-gateway-worker-dev
+    runtime: ruby
+    branch: dev
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec sidekiq -C config/sidekiq.yml"
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consultant-gateway-db-dev
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: consultant-gateway-redis-dev
+          property: connectionString
+      - key: RAILS_ENV
+        value: development
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_LOG_LEVEL
+        value: debug
+    autoDeploy: true
+
+# Databases
+databases:
+  # Production Database
+  - name: consultant-gateway-db-production
+    databaseName: consultant_gateway_production
+    user: consultant_gateway_prod
+    plan: standard
+    region: oregon
+    ipAllowList: []
+
+  # QA Database
+  - name: consultant-gateway-db-qa
+    databaseName: consultant_gateway_qa
+    user: consultant_gateway_qa
+    plan: starter
+    region: oregon
+    ipAllowList: []
+
+  # Staging Database
+  - name: consultant-gateway-db-staging
+    databaseName: consultant_gateway_staging
+    user: consultant_gateway_staging
+    plan: starter
+    region: oregon
+    ipAllowList: []
+
+  # Development Database
+  - name: consultant-gateway-db-dev
+    databaseName: consultant_gateway_dev
+    user: consultant_gateway_dev
+    plan: starter
+    region: oregon
+    ipAllowList: []
+
+  # Production Redis
+  - name: consultant-gateway-redis-production
+    plan: standard
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # QA Redis
+  - name: consultant-gateway-redis-qa
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # Staging Redis
+  - name: consultant-gateway-redis-staging
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # Development Redis
+  - name: consultant-gateway-redis-dev
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
     ipAllowList: []
